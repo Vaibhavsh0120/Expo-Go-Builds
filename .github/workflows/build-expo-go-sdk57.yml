@@ -1,0 +1,474 @@
+name: Build Expo Go SDK 57 (unsigned IPA for Sideloadly)
+
+# ─────────────────────────────────────────────────────────────────
+# TRIGGER: Run manually from the Actions tab.
+# You can also enable push/schedule by uncommenting below.
+# ─────────────────────────────────────────────────────────────────
+on:
+  workflow_dispatch:
+    inputs:
+      xcode_version:
+        description: "Xcode version (must be available on macos-26)"
+        required: false
+        default: "26.4.1"
+  # schedule:
+  #   - cron: '0 0 * * 0'  # Every Sunday midnight UTC
+
+# Only one build at a time to avoid runner cost waste.
+concurrency:
+  group: build-expo-go-sdk57
+  cancel-in-progress: true
+
+jobs:
+  build-expo-go-ios:
+    name: Build Expo Go iOS ARM64 (unsigned)
+    # ──────────────────────────────────────────────────────────────
+    # Expo's own sdk-57 CI uses macos-26 + Xcode 26.4.1.
+    # Source: .github/workflows/ios-unit-tests.yml on sdk-57 branch.
+    # ──────────────────────────────────────────────────────────────
+    runs-on: macos-26
+    timeout-minutes: 180
+
+    env:
+      # ── Expo source ───────────────────────────────────────────────
+      EXPO_BRANCH: sdk-57
+      # ── Build target ─────────────────────────────────────────────
+      SCHEME: "Expo Go"
+      WORKSPACE: apps/expo-go/ios/Exponent.xcworkspace
+      # Physical-device SDK (not simulator)
+      SDK: iphoneos
+      CONFIGURATION: Release
+      # ── Disable Expo telemetry to avoid interactive prompts ───────
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_NO_DOTENV: "1"
+      # ── pnpm ─────────────────────────────────────────────────────
+      PNPM_VERSION: "9"
+      # ── Ruby / CocoaPods ─────────────────────────────────────────
+      BUNDLE_GEMFILE: ${{ github.workspace }}/expo-src/Gemfile
+
+    steps:
+      # ──────────────────────────────────────────────────────────────
+      # 1. Diagnostics
+      # ──────────────────────────────────────────────────────────────
+      - name: Runner diagnostics
+        run: |
+          echo "=== System ==="
+          sw_vers
+          echo "=== Xcode available ==="
+          ls /Applications | grep Xcode || true
+          echo "=== Default Xcode ==="
+          xcode-select -p
+          echo "=== Disk space ==="
+          df -h
+
+      # ──────────────────────────────────────────────────────────────
+      # 2. Select correct Xcode
+      # ──────────────────────────────────────────────────────────────
+      - name: Select Xcode ${{ inputs.xcode_version || '26.4.1' }}
+        run: |
+          XCODE_APP="/Applications/Xcode_${{ inputs.xcode_version || '26.4.1' }}.app"
+          if [ -d "$XCODE_APP" ]; then
+            sudo xcode-select --switch "$XCODE_APP"
+            echo "Switched to $XCODE_APP"
+          else
+            echo "WARNING: $XCODE_APP not found. Available versions:"
+            ls /Applications | grep Xcode
+            echo "Falling back to system default Xcode"
+          fi
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      # ──────────────────────────────────────────────────────────────
+      # 3. Accept Xcode license (required on fresh runners)
+      # ──────────────────────────────────────────────────────────────
+      - name: Accept Xcode license
+        run: sudo xcodebuild -license accept
+
+      # ──────────────────────────────────────────────────────────────
+      # 4. Clone Expo monorepo (sdk-57 branch)
+      #    We do NOT use actions/checkout because we need the FULL
+      #    monorepo including the react-native-lab submodule which
+      #    contains Expo's custom React Native fork used by the build.
+      # ──────────────────────────────────────────────────────────────
+      - name: Clone Expo monorepo (sdk-57)
+        run: |
+          git clone \
+            --branch sdk-57 \
+            --depth 1 \
+            --recurse-submodules \
+            --shallow-submodules \
+            --jobs 4 \
+            https://github.com/expo/expo.git \
+            expo-src
+          cd expo-src
+          echo "Cloned. Commit: $(git rev-parse --short HEAD)"
+          echo "Submodule status:"
+          git submodule status --recursive | head -20
+
+      # ──────────────────────────────────────────────────────────────
+      # 5. Node.js -- use version compatible with SDK 57
+      # ──────────────────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # ──────────────────────────────────────────────────────────────
+      # 6. pnpm -- Expo monorepo uses pnpm (pnpm-workspace.yaml present)
+      # ──────────────────────────────────────────────────────────────
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      # ──────────────────────────────────────────────────────────────
+      # 7. Cache pnpm store
+      # ──────────────────────────────────────────────────────────────
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-sdk57-${{ hashFiles('expo-src/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-sdk57-
+
+      # ──────────────────────────────────────────────────────────────
+      # 8. Install JS dependencies
+      #    --frozen-lockfile ensures reproducibility.
+      #    --filter limits install to expo-go and its workspace deps.
+      # ──────────────────────────────────────────────────────────────
+      - name: Install JS dependencies (pnpm)
+        working-directory: expo-src
+        run: |
+          pnpm install \
+            --frozen-lockfile \
+            --filter "@expo/home..." \
+            --filter "expo-modules-core..." \
+            2>&1 | tail -80
+          echo "pnpm install complete"
+
+      # ──────────────────────────────────────────────────────────────
+      # 9. Ruby setup -- needed for CocoaPods
+      # ──────────────────────────────────────────────────────────────
+      - name: Set up Ruby 3.3
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      # ──────────────────────────────────────────────────────────────
+      # 10. Cache CocoaPods
+      # ──────────────────────────────────────────────────────────────
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        id: pods-cache
+        with:
+          path: expo-src/apps/expo-go/ios/Pods
+          key: pods-sdk57-${{ runner.os }}-${{ hashFiles('expo-src/apps/expo-go/ios/Podfile.lock') }}
+          restore-keys: |
+            pods-sdk57-${{ runner.os }}-
+
+      # ──────────────────────────────────────────────────────────────
+      # 11. Install CocoaPods
+      # ──────────────────────────────────────────────────────────────
+      - name: Install CocoaPods gem
+        run: |
+          gem install cocoapods --no-document
+          pod --version
+          echo "CocoaPods installed"
+
+      # ──────────────────────────────────────────────────────────────
+      # 12. Generate EXBuildConstants.plist
+      #     Required before Xcode can compile. Copy the .example
+      #     file as the starting point.
+      # ──────────────────────────────────────────────────────────────
+      - name: Generate EXBuildConstants.plist
+        working-directory: expo-src/apps/expo-go/ios
+        run: |
+          SUPPORTING="Exponent/Supporting"
+          PLIST="$SUPPORTING/EXBuildConstants.plist"
+          EXAMPLE="$SUPPORTING/EXBuildConstants.plist.example"
+
+          if [ ! -f "$PLIST" ]; then
+            echo "Copying $EXAMPLE -> $PLIST"
+            cp "$EXAMPLE" "$PLIST"
+          fi
+
+          echo "EXBuildConstants.plist ready"
+
+      # ──────────────────────────────────────────────────────────────
+      # 13. Generate EXShell.plist (Expo Go client mode, not shell app)
+      # ──────────────────────────────────────────────────────────────
+      - name: Generate EXShell.plist (Expo Go client mode)
+        working-directory: expo-src/apps/expo-go/ios/Exponent/Supporting
+        run: |
+          cat > EXShell.plist << 'PLIST_EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>isShell</key>
+            <false/>
+          </dict>
+          </plist>
+          PLIST_EOF
+          echo "EXShell.plist created"
+
+      # ──────────────────────────────────────────────────────────────
+      # 14. Run CocoaPods install
+      # ──────────────────────────────────────────────────────────────
+      - name: pod install
+        working-directory: expo-src/apps/expo-go/ios
+        run: |
+          node --version
+          npm --version
+
+          echo "Running pod install..."
+          pod install \
+            --repo-update \
+            2>&1 | tee /tmp/pod-install.log | tail -80
+
+          if [ $? -ne 0 ]; then
+            echo "pod install FAILED"
+            echo "=== Last 100 lines of pod-install.log ==="
+            tail -100 /tmp/pod-install.log
+            exit 1
+          fi
+
+          echo "pod install completed"
+          echo "Installed pods count: $(ls Pods/ 2>/dev/null | wc -l)"
+
+      # ──────────────────────────────────────────────────────────────
+      # 15. Verify workspace and scheme exist
+      # ──────────────────────────────────────────────────────────────
+      - name: Verify workspace and scheme
+        working-directory: expo-src
+        run: |
+          echo "=== Workspace ==="
+          ls apps/expo-go/ios/Exponent.xcworkspace/
+          echo "=== Available schemes ==="
+          xcodebuild -workspace "${{ env.WORKSPACE }}" -list 2>&1 | grep -A 20 "Schemes:" || true
+          echo "=== Available device SDKs ==="
+          xcodebuild -showsdks | grep iphoneos
+
+      # ──────────────────────────────────────────────────────────────
+      # 16. Build Expo Go for physical device (ARM64, unsigned)
+      #
+      #     KEY FLAGS:
+      #     -sdk iphoneos           => physical device ARM64 (NOT simulator)
+      #     -destination generic/platform=iOS => generic device build
+      #     CODE_SIGNING_REQUIRED=NO          => no certificate needed
+      #     CODE_SIGNING_ALLOWED=NO           => skip signing phase
+      #     CODE_SIGN_IDENTITY=""             => no identity
+      #     ONLY_ACTIVE_ARCH=NO              => build all device archs
+      #     EXCLUDED_ARCHS=""                => do not exclude arm64
+      #     SKIP_INSTALL=NO                  => produce .app in Products
+      #
+      #     Sideloadly will apply its own signature after download.
+      # ──────────────────────────────────────────────────────────────
+      - name: Build Expo Go (ARM64 device, unsigned)
+        working-directory: expo-src
+        run: |
+          set -euo pipefail
+
+          BUILD_DIR="${{ github.workspace }}/build-output"
+          LOG_FILE="/tmp/xcodebuild.log"
+
+          mkdir -p "$BUILD_DIR"
+
+          echo "=== Starting xcodebuild ==="
+          echo "Workspace:     ${{ env.WORKSPACE }}"
+          echo "Scheme:        ${{ env.SCHEME }}"
+          echo "Configuration: ${{ env.CONFIGURATION }}"
+          echo "SDK:           ${{ env.SDK }}"
+          echo "Build dir:     $BUILD_DIR"
+
+          xcodebuild \
+            -workspace "${{ env.WORKSPACE }}" \
+            -scheme "${{ env.SCHEME }}" \
+            -configuration "${{ env.CONFIGURATION }}" \
+            -sdk "${{ env.SDK }}" \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$BUILD_DIR/DerivedData" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            PROVISIONING_PROFILE="" \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO \
+            EXCLUDED_ARCHS="" \
+            SKIP_INSTALL=NO \
+            build \
+            2>&1 | tee "$LOG_FILE" | \
+              grep -E "(error:|warning:|Build succeeded|BUILD SUCCEEDED|BUILD FAILED|Linking|Compiling|Creating|Touching|CodeSign|Write)" | \
+              tail -200
+
+          XCODE_EXIT="${PIPESTATUS[0]}"
+          if [ "$XCODE_EXIT" -ne 0 ]; then
+            echo ""
+            echo "xcodebuild FAILED with exit code $XCODE_EXIT"
+            echo ""
+            echo "=== Last 150 lines of build log ==="
+            tail -150 "$LOG_FILE"
+            exit 1
+          fi
+
+          echo ""
+          echo "xcodebuild completed successfully"
+
+      # ──────────────────────────────────────────────────────────────
+      # 17. Find and verify the .app bundle
+      # ──────────────────────────────────────────────────────────────
+      - name: Find and verify .app bundle
+        id: find_app
+        run: |
+          BUILD_DIR="${{ github.workspace }}/build-output"
+
+          echo "=== Searching for Expo Go.app ==="
+          APP_PATH=$(find "$BUILD_DIR" -name "Expo Go.app" -type d | head -1)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "Could not find 'Expo Go.app' in $BUILD_DIR"
+            echo "=== All .app bundles found ==="
+            find "$BUILD_DIR" -name "*.app" -type d 2>/dev/null | head -20
+            exit 1
+          fi
+
+          echo "Found app: $APP_PATH"
+          echo "APP_PATH=$APP_PATH" >> "$GITHUB_OUTPUT"
+
+          echo ""
+          echo "=== App bundle contents ==="
+          ls -la "$APP_PATH" | head -30
+
+          echo ""
+          echo "=== Binary architecture ==="
+          BINARY_NAME=$(find "$APP_PATH" -maxdepth 1 -type f -perm +111 | head -1)
+          if [ -n "$BINARY_NAME" ]; then
+            file "$BINARY_NAME"
+            lipo -info "$BINARY_NAME"
+          fi
+
+          echo ""
+          echo "=== Info.plist values ==="
+          INFOPLIST="$APP_PATH/Info.plist"
+          if [ -f "$INFOPLIST" ]; then
+            /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFOPLIST" && \
+            /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFOPLIST" && \
+            /usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$INFOPLIST" 2>/dev/null || true
+          fi
+
+          echo ""
+          echo "=== Code signing status (expected: unsigned) ==="
+          codesign -dvvv "$APP_PATH" 2>&1 || echo "(unsigned -- expected at this stage)"
+
+          echo ""
+          echo "=== App bundle size ==="
+          du -sh "$APP_PATH"
+
+      # ──────────────────────────────────────────────────────────────
+      # 18. Package .app as .ipa
+      #     IPA format: ZIP archive with Payload/AppName.app inside.
+      #     Sideloadly requires this exact structure.
+      # ──────────────────────────────────────────────────────────────
+      - name: Package IPA (Payload/Expo Go.app -> .ipa)
+        id: package_ipa
+        run: |
+          APP_PATH="${{ steps.find_app.outputs.APP_PATH }}"
+          IPA_DIR="${{ github.workspace }}/ipa-output"
+          PAYLOAD_DIR="$IPA_DIR/Payload"
+          IPA_PATH="$IPA_DIR/ExpoGo-SDK57-unsigned.ipa"
+
+          mkdir -p "$PAYLOAD_DIR"
+
+          echo "Copying app bundle to Payload/"
+          cp -R "$APP_PATH" "$PAYLOAD_DIR/"
+
+          echo "=== Payload contents ==="
+          ls -la "$PAYLOAD_DIR/"
+
+          echo "Creating IPA (ZIP with Payload/)"
+          cd "$IPA_DIR"
+          zip -r "$IPA_PATH" Payload/ -x "*.DS_Store"
+
+          echo ""
+          echo "IPA created: $IPA_PATH"
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_OUTPUT"
+
+          echo ""
+          echo "=== Verify IPA structure ==="
+          unzip -l "$IPA_PATH" | head -10
+
+          echo ""
+          echo "=== IPA file size ==="
+          du -sh "$IPA_PATH"
+
+          echo ""
+          echo "=== Verify Payload contains ARM64 binary ==="
+          TEMP_DIR=$(mktemp -d)
+          unzip -q "$IPA_PATH" -d "$TEMP_DIR"
+          INNER_APP=$(find "$TEMP_DIR/Payload" -name "*.app" -type d | head -1)
+          if [ -n "$INNER_APP" ]; then
+            APP_NAME=$(basename "$INNER_APP" .app)
+            INNER_BINARY="$INNER_APP/$APP_NAME"
+            if [ -f "$INNER_BINARY" ]; then
+              echo "Binary: $INNER_BINARY"
+              file "$INNER_BINARY" 2>/dev/null || true
+              lipo -info "$INNER_BINARY" 2>/dev/null || true
+            fi
+          fi
+          rm -rf "$TEMP_DIR"
+
+      # ──────────────────────────────────────────────────────────────
+      # 19. Upload IPA as GitHub Actions artifact
+      # ──────────────────────────────────────────────────────────────
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ExpoGo-SDK57-unsigned-ipa
+          path: ${{ steps.package_ipa.outputs.IPA_PATH }}
+          # Keep for 30 days
+          retention-days: 30
+          if-no-files-found: error
+
+      # ──────────────────────────────────────────────────────────────
+      # 20. Upload build log on failure for diagnosis
+      # ──────────────────────────────────────────────────────────────
+      - name: Upload build log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-failure-log
+          path: /tmp/xcodebuild.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # ──────────────────────────────────────────────────────────────
+      # 21. Summary
+      # ──────────────────────────────────────────────────────────────
+      - name: Build summary
+        if: success()
+        run: |
+          echo ""
+          echo "======================================================="
+          echo "     BUILD COMPLETE -- Expo Go SDK 57 (unsigned IPA)"
+          echo "======================================================="
+          echo ""
+          echo "  IPA artifact: ExpoGo-SDK57-unsigned-ipa"
+          echo "  SDK:          iphoneos (physical device ARM64)"
+          echo "  Min iOS:      16.4"
+          echo "  Bundle ID:    host.exp.Exponent"
+          echo ""
+          echo "  NEXT STEPS:"
+          echo "  1. Go to Actions -> this run -> Artifacts"
+          echo "  2. Download 'ExpoGo-SDK57-unsigned-ipa'"
+          echo "  3. Extract the ZIP to get ExpoGo-SDK57-unsigned.ipa"
+          echo "  4. Open Sideloadly on Windows"
+          echo "  5. Connect iPhone via USB"
+          echo "  6. Drag the IPA into Sideloadly"
+          echo "  7. Enter your free Apple ID"
+          echo "  8. Click Start"
+          echo "  9. On iPhone: Settings > General > VPN & Device Management"
+          echo "     > Trust your Apple ID"
+          echo ""
