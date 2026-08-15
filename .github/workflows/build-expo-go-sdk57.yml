@@ -85,12 +85,28 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-version
 
       # ───────────────────────────────────────────────────────────────
+      # Force any git@github.com: SSH URL to be rewritten to HTTPS,
+      # globally, before checkout runs. `.gitmodules` for
+      # react-native-lab/react-native uses an SSH URL
+      # (git@github.com:expo/react-native.git). actions/checkout's
+      # built-in SSH->HTTPS rewrite only patches the URL it uses for the
+      # top-level repo -- it does NOT reliably propagate into recursive
+      # submodule URLs read from .gitmodules, so the runner (which has
+      # no SSH key) fails with "Permission denied (publickey)" trying to
+      # clone the submodule. This git config applies to every git
+      # invocation in later steps (including the recursive submodule
+      # clone), so it's the fix regardless of what actions/checkout does
+      # internally.
+      # ───────────────────────────────────────────────────────────────
+      - name: Force SSH->HTTPS rewrite for all github.com URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      # ───────────────────────────────────────────────────────────────
       # Checks out a DIFFERENT public repo (expo/expo), not this one.
       # `submodules: recursive` pulls in react-native-lab/react-native
-      # (Expo's React Native fork). Its URL in .gitmodules is an SSH URL
-      # (git@github.com:expo/react-native.git); actions/checkout rewrites
-      # git@github.com: URLs to HTTPS automatically when no ssh-key input
-      # is given, so no SSH key/secret is needed for this public repo.
+      # (Expo's React Native fork). With the URL rewrite above in place,
+      # this submodule now clones over HTTPS too, so no SSH key/secret
+      # is needed for this public repo.
       # `lfs: true` is required -- the expo/expo repo tracks binary
       # assets with Git LFS (.gitattributes / .lfsconfig).
       # ───────────────────────────────────────────────────────────────
