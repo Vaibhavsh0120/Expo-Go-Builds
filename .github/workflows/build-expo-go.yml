@@ -1,0 +1,621 @@
+name: Build Expo Go (unsigned IPA for Sideloadly)
+
+# ─────────────────────────────────────────────────────────────────────────
+# WHAT THIS DOES
+#   Builds the real "Expo Go" iOS app target from expo/expo, for EITHER
+#   SDK 56 or SDK 57 (your choice at dispatch time), for a PHYSICAL iOS
+#   device (arm64, -sdk iphoneos), completely UNSIGNED
+#   (CODE_SIGNING_ALLOWED=NO), then zips the resulting .app into an .ipa
+#   so you can sign/install it yourself with Sideloadly + a free Apple ID.
+#   No Apple Developer Program membership and no Expo secrets are required
+#   to build. See README.md for what does and doesn't work after a
+#   free-Apple-ID resign, and for the full Sideloadly procedure.
+#
+#   This is the successor to build-expo-go-sdk57.yml (kept in git history
+#   only -- see docs/DECISIONS.md). It was NOT forked/duplicated per SDK;
+#   verification against expo/expo's sdk-56 and sdk-57 branches (done
+#   2026-08-16, see docs/SDK_56.md and docs/SDK_57.md for the full diff)
+#   found the two SDKs use an IDENTICAL toolchain -- same Node (22.14.0),
+#   same pnpm (10), same Ruby (3.2.2), same CocoaPods (1.16.2, byte-
+#   identical Gemfile.lock), same Xcode (26.4.1) and macos-26 runner, same
+#   min iOS (16.4), same Brewfile, same .gitmodules, same expo-go
+#   README.md build recipe. The ONLY thing that actually needs to change
+#   per SDK is which branch gets checked out and how outputs are named/
+#   labeled -- so one parameterized workflow is the correct, minimal
+#   design, not a technical compromise. If a future SDK genuinely needs a
+#   different Node/Ruby/Xcode version, add it to the CONFIG MATRIX step
+#   below; nothing else in this file should need to change.
+#
+#   Every path, script, env var, and version below was verified by
+#   directly reading expo/expo's sdk-56 AND sdk-57 branches
+#   (apps/expo-go/**, .github/workflows/ios-unit-tests.yml, root
+#   package.json/Gemfile/Gemfile.lock/Brewfile/pnpm-lock.yaml) on
+#   2026-08-16. See docs/SDK_56.md / docs/SDK_57.md for the source of
+#   every value here.
+# ─────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      expo_sdk:
+        description: "Expo Go SDK version to build"
+        required: true
+        type: choice
+        options:
+          - "57"
+          - "56"
+        default: "57"
+      expo_ref:
+        description: "Override: exact branch/tag/commit in expo/expo to build (leave blank to use the default branch for the SDK you picked above, e.g. sdk-57 or sdk-56)"
+        required: false
+        default: ""
+      xcode_version:
+        description: "Xcode app bundle to select on the runner (must exist in /Applications on the macos-26 image)"
+        required: false
+        default: "26.4.1"
+      create_release:
+        description: "Also publish this build as a GitHub Release (in addition to the always-uploaded Actions artifact)"
+        required: false
+        type: boolean
+        default: false
+  # push:
+  #   branches: [main]
+  # schedule:
+  #   - cron: '0 6 * * 1'   # weekly, if you want to track sdk-57/sdk-56 patch updates automatically
+
+concurrency:
+  group: build-expo-go-${{ inputs.expo_sdk }}
+  cancel-in-progress: true
+
+env:
+  EXPO_NO_TELEMETRY: "1"
+  EXPO_USE_SOURCE: "1"
+  # apps/expo-go/ios has no Gemfile of its own -- it uses the monorepo
+  # root Gemfile, which pins cocoapods 1.16.2 and fastlane 2.232.2 on
+  # BOTH sdk-56 and sdk-57 (verified: byte-identical Gemfile.lock across
+  # both branches). This lets `bundle exec pod install` work no matter
+  # which directory a step runs from.
+  BUNDLE_GEMFILE: ${{ github.workspace }}/expo-src/Gemfile
+
+jobs:
+  build-expo-go-ios:
+    name: Build Expo Go (iOS, physical device, arm64, unsigned)
+    runs-on: macos-26
+    timeout-minutes: 180
+    # contents: write is only actually exercised by the opt-in "Publish
+    # GitHub Release" step (create_release input, default false). Needed
+    # because many orgs/repos now default GITHUB_TOKEN to read-only;
+    # without this, `gh release create` fails with a 403 when someone
+    # does opt in. Artifact upload does not need this permission.
+    permissions:
+      contents: write
+
+    steps:
+      # ───────────────────────────────────────────────────────────────
+      # CONFIG MATRIX -- the one place SDK-specific values live.
+      #
+      # Verified 2026-08-16 by diffing expo/expo's sdk-56 and sdk-57
+      # branches directly (see docs/SDK_56.md / docs/SDK_57.md):
+      #   - Node 22.14.0            IDENTICAL on both (root package.json
+      #                              "volta.node")
+      #   - pnpm 10                 IDENTICAL on both (ios-unit-tests.yml)
+      #   - Ruby 3.2.2               IDENTICAL on both (ios-unit-tests.yml)
+      #   - CocoaPods 1.16.2         IDENTICAL on both (byte-identical
+      #                              Gemfile.lock)
+      #   - fastlane 2.232.2         IDENTICAL on both (byte-identical
+      #                              Gemfile.lock)
+      #   - macos-26 / Xcode 26.4.1  IDENTICAL on both (byte-identical
+      #                              .github/workflows/ios-unit-tests.yml)
+      #   - Min iOS 16.4             IDENTICAL on both (Podfile +
+      #                              project.pbxproj agree, both branches)
+      #   - .gitmodules (SSH URL     IDENTICAL on both -- same SSH->HTTPS
+      #     for react-native-lab)     rewrite fix applies to both
+      #   - apps/expo-go/README.md  IDENTICAL on both (byte-identical
+      #     build recipe                 build steps)
+      #
+      # Only the branch name and output naming differ. If a future SDK
+      # (58+) actually needs a different Node/Ruby/Xcode/CocoaPods
+      # version, add a new case here -- do not assume it matches 56/57
+      # without re-verifying against the live expo/expo branch first.
+      # ───────────────────────────────────────────────────────────────
+      - name: Resolve SDK-specific configuration
+        id: config
+        run: |
+          SDK="${{ inputs.expo_sdk }}"
+          OVERRIDE_REF="${{ inputs.expo_ref }}"
+
+          case "$SDK" in
+            57)
+              DEFAULT_REF="sdk-57"
+              ;;
+            56)
+              DEFAULT_REF="sdk-56"
+              ;;
+            *)
+              echo "::error::Unknown expo_sdk input '$SDK' -- expected 56 or 57"
+              exit 1
+              ;;
+          esac
+
+          if [ -n "$OVERRIDE_REF" ]; then
+            REF="$OVERRIDE_REF"
+          else
+            REF="$DEFAULT_REF"
+          fi
+
+          # Toolchain is identical across sdk-56 and sdk-57 (see comment
+          # block above) -- verified, not assumed.
+          NODE_VERSION="22.14.0"
+          PNPM_VERSION="10"
+          RUBY_VERSION="3.2.2"
+          MIN_IOS="16.4"
+
+          IPA_BASENAME="ExpoGo-SDK${SDK}-unsigned"
+          ARTIFACT_NAME="ExpoGo-SDK${SDK}-iOS"
+
+          {
+            echo "sdk=$SDK"
+            echo "expo_ref=$REF"
+            echo "node_version=$NODE_VERSION"
+            echo "pnpm_version=$PNPM_VERSION"
+            echo "ruby_version=$RUBY_VERSION"
+            echo "min_ios=$MIN_IOS"
+            echo "ipa_basename=$IPA_BASENAME"
+            echo "artifact_name=$ARTIFACT_NAME"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "=================================================="
+          echo "Expo Go Build"
+          echo "SDK:             $SDK"
+          echo "Source:          $REF"
+          echo "Node:            $NODE_VERSION"
+          echo "pnpm:            $PNPM_VERSION"
+          echo "Ruby:            $RUBY_VERSION"
+          echo "CocoaPods:       1.16.2"
+          echo "Xcode:           ${{ inputs.xcode_version }}"
+          echo "iOS SDK:         iphoneos"
+          echo "Min iOS:         $MIN_IOS"
+          echo "Target:          iphoneos"
+          echo "Configuration:   Release"
+          echo "Signing:         Disabled"
+          echo "IPA filename:    ${IPA_BASENAME}.ipa"
+          echo "Artifact name:   $ARTIFACT_NAME"
+          echo "Create release:  ${{ inputs.create_release }}"
+          echo "=================================================="
+
+      # ───────────────────────────────────────────────────────────────
+      - name: Runner diagnostics
+        run: |
+          echo "=== System ==="
+          sw_vers
+          uname -m
+          echo "=== Xcode versions on this image ==="
+          ls /Applications | grep -i Xcode || true
+          echo "=== Current xcode-select ==="
+          xcode-select -p
+          echo "=== Disk space ==="
+          df -h /
+
+      # ───────────────────────────────────────────────────────────────
+      - name: Select Xcode ${{ inputs.xcode_version }}
+        run: |
+          XCODE_APP="/Applications/Xcode_${{ inputs.xcode_version }}.app"
+          if [ -d "$XCODE_APP" ]; then
+            sudo xcode-select --switch "$XCODE_APP"
+            echo "Switched to $XCODE_APP"
+          else
+            echo "::warning::$XCODE_APP was not found on this runner image. \
+          The image's Xcode line-up rotates over time (GitHub retires the \
+          oldest build a few weeks after a new one ships). Falling back to \
+          whatever is currently selected by default. Available versions:"
+            ls /Applications | grep -i Xcode
+          fi
+          xcodebuild -version
+          echo "=== iphoneos SDK ==="
+          xcrun --sdk iphoneos --show-sdk-version
+
+      # ───────────────────────────────────────────────────────────────
+      # Force any git@github.com: SSH URL to be rewritten to HTTPS,
+      # globally, before checkout runs. `.gitmodules` for
+      # react-native-lab/react-native uses an SSH URL
+      # (git@github.com:expo/react-native.git) on BOTH sdk-56 and sdk-57
+      # (verified byte-identical .gitmodules across both branches).
+      # actions/checkout's built-in SSH->HTTPS rewrite only patches the
+      # URL it uses for the top-level repo -- it does NOT reliably
+      # propagate into recursive submodule URLs read from .gitmodules, so
+      # the runner (which has no SSH key) fails with "Permission denied
+      # (publickey)" trying to clone the submodule. This git config
+      # applies to every git invocation in later steps (including the
+      # recursive submodule clone), so it's the fix regardless of what
+      # actions/checkout does internally, and regardless of SDK.
+      # ───────────────────────────────────────────────────────────────
+      - name: Force SSH->HTTPS rewrite for all github.com URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      # ───────────────────────────────────────────────────────────────
+      # Checks out a DIFFERENT public repo (expo/expo), not this one.
+      # `submodules: recursive` pulls in react-native-lab/react-native
+      # (Expo's React Native fork). With the URL rewrite above in place,
+      # this submodule clones over HTTPS too, so no SSH key/secret is
+      # needed for this public repo.
+      # `lfs: true` is required -- the expo/expo repo tracks binary
+      # assets with Git LFS (.gitattributes / .lfsconfig) on both SDKs.
+      # ───────────────────────────────────────────────────────────────
+      - name: Checkout expo/expo @ ${{ steps.config.outputs.expo_ref }} (SDK ${{ steps.config.outputs.sdk }})
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: expo/expo
+          ref: ${{ steps.config.outputs.expo_ref }}
+          path: expo-src
+          submodules: recursive
+          lfs: true
+          fetch-depth: 1
+
+      - name: Record exact commit built
+        working-directory: expo-src
+        run: |
+          echo "Building expo/expo @ $(git rev-parse HEAD)"
+          echo "SDK requested: ${{ steps.config.outputs.sdk }}"
+          echo "Ref requested: ${{ steps.config.outputs.expo_ref }}"
+          git log -1 --format="%H %ci %s"
+          echo "=== apps/expo-go/sdkVersions.json (embedded SDK version) ==="
+          cat apps/expo-go/sdkVersions.json || echo "::warning::sdkVersions.json not found at expected path"
+
+      # ───────────────────────────────────────────────────────────────
+      # Brewfile (repo root) requires cmake + ninja: Expo Go builds
+      # Hermes from source via react-native-lab (RCT_BUILD_HERMES_FROM_SOURCE).
+      # Verified byte-identical Brewfile on sdk-56 and sdk-57.
+      # ───────────────────────────────────────────────────────────────
+      - name: Install native build tools (cmake, ninja via Brewfile)
+        working-directory: expo-src
+        run: |
+          brew bundle
+          command -v cmake
+          command -v ninja
+
+      # ───────────────────────────────────────────────────────────────
+      # Node version verified identical (22.14.0) on both sdk-56 and
+      # sdk-57's root package.json "volta.node" field.
+      # ───────────────────────────────────────────────────────────────
+      - name: Set up Node.js ${{ steps.config.outputs.node_version }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ steps.config.outputs.node_version }}
+
+      # pnpm 10 matches expo/expo's own ios-unit-tests.yml workflow on
+      # both branches. pnpm-lock.yaml declares lockfileVersion '9.0' on
+      # both, which pnpm 9+ can read.
+      - name: Set up pnpm ${{ steps.config.outputs.pnpm_version }}
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: ${{ steps.config.outputs.pnpm_version }}
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-sdk${{ steps.config.outputs.sdk }}-${{ steps.config.outputs.expo_ref }}-${{ hashFiles('expo-src/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-sdk${{ steps.config.outputs.sdk }}-${{ steps.config.outputs.expo_ref }}-
+
+      # ───────────────────────────────────────────────────────────────
+      # This mirrors apps/expo-go/README.md exactly (byte-identical on
+      # both branches): plain `pnpm install` at the monorepo root (NOT a
+      # filtered/partial install -- Expo Go's Podfile and build scripts
+      # reach into many workspace packages). We deliberately do NOT run
+      # the Android half of `pnpm setup:native`
+      # (./scripts/setup-react-android.sh installs Android SDK platforms/
+      # NDK via sdkmanager) since it's irrelevant to an iOS-only build
+      # and would only add time/failure surface.
+      # ───────────────────────────────────────────────────────────────
+      - name: Install JS dependencies (pnpm install, monorepo root)
+        working-directory: expo-src
+        run: pnpm install --frozen-lockfile
+
+      # apps/expo-go/README.md, step "Build Expo Go" -> "Set up React Native":
+      # `pnpm install:react-native-lab` runs `yarn --cwd react-native-lab/react-native
+      # install --frozen-lockfile` (this is a real package.json script, run verbatim).
+      - name: Install React Native fork dependencies (react-native-lab)
+        working-directory: expo-src
+        run: |
+          command -v yarn || npm install -g yarn
+          pnpm run install:react-native-lab
+
+      # apps/expo-go/README.md, step "Build Expo Go":
+      # `pnpm build` inside packages/expo (this runs `tsc`; it produces
+      # packages/expo/build/, which apps/expo-go/ios/Podfile invokes via
+      # `node --eval "require('expo/bin/autolinking')"` during pod install).
+      - name: Build the `expo` package (tsc)
+        working-directory: expo-src/packages/expo
+        run: pnpm build
+
+      # ───────────────────────────────────────────────────────────────
+      # Ruby version verified identical (3.2.2) on both branches'
+      # ios-unit-tests.yml. bundler-cache: true runs `bundle install`
+      # against expo-src/Gemfile, which pins cocoapods 1.16.2 and
+      # fastlane 2.232.2 in a byte-identical Gemfile.lock on both SDKs --
+      # so we get the exact CocoaPods version Expo's own CI uses, not
+      # whatever `gem install cocoapods` would resolve to today.
+      # ───────────────────────────────────────────────────────────────
+      - name: Set up Ruby ${{ steps.config.outputs.ruby_version }} + gems (CocoaPods 1.16.2, pinned)
+        uses: ruby/setup-ruby@6aaa311d81eba98ae12eaffbcb63296ace0efcde # v1
+        with:
+          ruby-version: ${{ steps.config.outputs.ruby_version }}
+          bundler-cache: true
+          working-directory: expo-src
+
+      # ───────────────────────────────────────────────────────────────
+      # Cache Pods/ keyed on the *committed* Podfile.lock. This step just
+      # warms the cache; pod install still runs below (CocoaPods needs
+      # the actual Pods/ + generated Pods.xcodeproj, a cache hit only
+      # saves the download/resolve time). Keyed by SDK so 56/57 caches
+      # never collide.
+      # ───────────────────────────────────────────────────────────────
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: expo-src/apps/expo-go/ios/Pods
+          key: pods-${{ runner.os }}-sdk${{ steps.config.outputs.sdk }}-${{ steps.config.outputs.expo_ref }}-${{ hashFiles('expo-src/apps/expo-go/ios/Podfile.lock') }}
+          restore-keys: |
+            pods-${{ runner.os }}-sdk${{ steps.config.outputs.sdk }}-${{ steps.config.outputs.expo_ref }}-
+
+      # ───────────────────────────────────────────────────────────────
+      # This script is the REAL "Generate Dynamic Macros" Xcode Run
+      # Script build phase (apps/expo-go/ios/Build-Phases/generate-dynamic-macros.sh).
+      # It normally runs automatically as part of `xcodebuild build`; we
+      # also run it explicitly here so EXBuildConstants.plist and
+      # GoogleService-Info.plist exist before `pod install`/indexing.
+      # It falls back to the public, checked-in template-files/keys.json
+      # when secrets/keys.json (Expo-internal, gcloud-gated) isn't
+      # present -- which is exactly our situation, and is the documented,
+      # supported "no secrets" path (see secrets/README.md in expo/expo:
+      # "Expo's software works without these secrets"). This applies on
+      # both sdk-56 and sdk-57.
+      #
+      # NOTE: we deliberately do NOT create Exponent/Supporting/EXShell.plist.
+      # An older revision of this build (and some outdated blog posts/
+      # scripts) manually wrote an EXShell.plist assuming it controls
+      # client-vs-standalone mode. In the current source there is no
+      # EXShellManager class and nothing reads EXShell.plist anymore
+      # (verified by grepping the whole apps/expo-go/ios tree on both
+      # branches) -- creating one does nothing useful and risks
+      # accidentally shipping the unrelated EXShell.plist.example content
+      # (which points at a demo manifest URL) if some future code path
+      # ever reads it again.
+      # ───────────────────────────────────────────────────────────────
+      - name: Generate EXBuildConstants.plist / GoogleService-Info.plist
+        working-directory: expo-src
+        run: |
+          bash apps/expo-go/ios/Build-Phases/generate-dynamic-macros.sh --configuration Release
+          echo "=== EXBuildConstants.plist ==="
+          plutil -p apps/expo-go/ios/Exponent/Supporting/EXBuildConstants.plist
+          echo "=== GoogleService-Info.plist present? ==="
+          ls -la apps/expo-go/ios/Exponent/Supporting/GoogleService-Info.plist
+
+      # ───────────────────────────────────────────────────────────────
+      # No `pod repo update` / `--repo-update`: apps/expo-go/ios/Podfile
+      # has no explicit `source` line on either branch, so CocoaPods uses
+      # the default CDN (trunk) source, which doesn't need a full
+      # specs-repo clone.
+      # ───────────────────────────────────────────────────────────────
+      - name: pod install (CocoaPods 1.16.2)
+        working-directory: expo-src/apps/expo-go/ios
+        run: |
+          bundle exec pod install --verbose 2>&1 | tee /tmp/pod-install.log | tail -150
+          echo "Installed pods: $(ls Pods 2>/dev/null | wc -l | tr -d ' ')"
+
+      # ───────────────────────────────────────────────────────────────
+      - name: Verify workspace and scheme
+        working-directory: expo-src
+        run: |
+          echo "=== Schemes in Exponent.xcworkspace ==="
+          xcodebuild -workspace apps/expo-go/ios/Exponent.xcworkspace -list
+          echo "=== iphoneos SDKs available ==="
+          xcodebuild -showsdks | grep iphoneos
+
+      # ───────────────────────────────────────────────────────────────
+      # KEY FLAGS (all verified compatible with apps/expo-go/ios/Podfile
+      # on both sdk-56 and sdk-57, which sets RCT_NEW_ARCH_ENABLED=1,
+      # mac_catalyst_enabled: false on both):
+      #   -sdk iphoneos                       physical device, NOT simulator
+      #   -destination generic/platform=iOS   generic device build (no specific
+      #                                        UDID needed -- this is what lets
+      #                                        the build run on a GitHub runner
+      #                                        with no device attached)
+      #   CODE_SIGNING_ALLOWED=NO             skip signing entirely -- this is
+      #   CODE_SIGNING_REQUIRED=NO            what makes an Apple Developer
+      #   CODE_SIGN_IDENTITY=""               Program membership unnecessary to
+      #   PROVISIONING_PROFILE=""             COMPILE. Sideloadly signs later.
+      #   DEVELOPMENT_TEAM=""
+      #   CODE_SIGN_ENTITLEMENTS=""           don't embed Exponent.entitlements
+      #                                        (push/associated-domains/iCloud/
+      #                                        Sign in with Apple) into the
+      #                                        unsigned binary -- see README.md
+      #                                        for why this matters for Sideloadly.
+      #   ONLY_ACTIVE_ARCH=NO                 build all arches for the SDK (in
+      #                                        practice iphoneos only ships arm64
+      #                                        today, so this mostly just avoids
+      #                                        relying on a connected device)
+      #   SKIP_INSTALL=NO                     actually produce Expo Go.app in
+      #                                        the build products, not just .o files
+      # ───────────────────────────────────────────────────────────────
+      - name: Build Expo Go (iphoneos, arm64, unsigned)
+        working-directory: expo-src
+        run: |
+          set -euo pipefail
+          BUILD_DIR="${GITHUB_WORKSPACE}/build-output"
+          LOG_FILE="/tmp/xcodebuild.log"
+          mkdir -p "$BUILD_DIR"
+
+          xcodebuild \
+            -workspace apps/expo-go/ios/Exponent.xcworkspace \
+            -scheme "Expo Go" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$BUILD_DIR/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            PROVISIONING_PROFILE="" \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO \
+            SKIP_INSTALL=NO \
+            build 2>&1 | tee "$LOG_FILE" | (command -v xcbeautify >/dev/null && xcbeautify || cat)
+
+          echo "xcodebuild completed successfully"
+
+      # ───────────────────────────────────────────────────────────────
+      - name: Find and verify the .app bundle
+        id: find_app
+        run: |
+          BUILD_DIR="${GITHUB_WORKSPACE}/build-output"
+          APP_PATH=$(find "$BUILD_DIR" -name "Expo Go.app" -type d | head -1)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::Could not find 'Expo Go.app' under $BUILD_DIR"
+            find "$BUILD_DIR" -name "*.app" -type d 2>/dev/null
+            exit 1
+          fi
+
+          echo "APP_PATH=$APP_PATH" >> "$GITHUB_OUTPUT"
+          echo "Found: $APP_PATH"
+
+          BINARY="$APP_PATH/Expo Go"
+          if [ ! -f "$BINARY" ]; then
+            echo "::warning::Expected binary at '$BINARY' but it wasn't there (PRODUCT_NAME may have changed upstream). Falling back to searching for the executable."
+            BINARY=$(find "$APP_PATH" -maxdepth 1 -type f -perm +111 | head -1)
+          fi
+
+          echo "=== 1. IPA/app bundle exists ==="
+          echo "yes: $APP_PATH"
+
+          echo "=== 2/3. file + Payload/*.app structure check (pre-zip) ==="
+          file "$BINARY"
+
+          echo "=== 4/5. lipo -info (must report arm64, must NOT report a simulator arch) ==="
+          lipo -info "$BINARY"
+
+          echo "=== otool -hv (verify Mach-O header / CPU type) ==="
+          otool -hv "$BINARY" | head -5
+
+          echo "=== otool -l | grep LC_BUILD_VERSION (confirms device, not simulator, build) ==="
+          otool -l "$BINARY" | grep -A4 "LC_BUILD_VERSION" | head -20 || true
+
+          echo "=== 6. Bundle identifier ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Info.plist"
+
+          echo "=== 7. Expo Go / app version ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_PATH/Info.plist"
+          echo "Embedded Expo SDK version (from sdkVersions.json at checkout):"
+          cat "${GITHUB_WORKSPACE}/expo-src/apps/expo-go/sdkVersions.json" 2>/dev/null || echo "(not found)"
+
+          echo "=== 8. Minimum iOS version ==="
+          /usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$APP_PATH/Info.plist" 2>/dev/null || echo "(MinimumOSVersion not in Info.plist; see docs/SDK_${{ steps.config.outputs.sdk }}.md for the verified Podfile value)"
+
+          echo "=== 9. Build architecture ==="
+          lipo -archs "$BINARY"
+
+          echo "=== 10. codesign status (expected: unsigned at this stage) ==="
+          codesign -dvvv "$APP_PATH" 2>&1 || echo "(unsigned -- expected; Sideloadly signs it next)"
+
+          echo "=== size ==="
+          du -sh "$APP_PATH"
+
+      # ───────────────────────────────────────────────────────────────
+      - name: Package IPA (Payload/Expo Go.app -> .ipa)
+        id: package_ipa
+        run: |
+          APP_PATH="${{ steps.find_app.outputs.APP_PATH }}"
+          IPA_DIR="${GITHUB_WORKSPACE}/ipa-output"
+          PAYLOAD_DIR="$IPA_DIR/Payload"
+          IPA_BASENAME="${{ steps.config.outputs.ipa_basename }}"
+          IPA_PATH="$IPA_DIR/${IPA_BASENAME}.ipa"
+
+          mkdir -p "$PAYLOAD_DIR"
+          cp -R "$APP_PATH" "$PAYLOAD_DIR/"
+
+          cd "$IPA_DIR"
+          zip -rq "$IPA_PATH" Payload -x "*.DS_Store"
+
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_OUTPUT"
+          echo "IPA_FILENAME=${IPA_BASENAME}.ipa" >> "$GITHUB_OUTPUT"
+
+          echo "=== 2. IPA is a valid ZIP ==="
+          unzip -t "$IPA_PATH" | tail -3
+
+          echo "=== 3. Contains Payload/*.app ==="
+          unzip -l "$IPA_PATH" | grep -m1 "Payload/.*\.app/" && echo "confirmed" || { echo "::error::No Payload/*.app entry found in IPA"; exit 1; }
+
+          echo "=== IPA contents (first 15 entries) ==="
+          unzip -l "$IPA_PATH" | head -15
+
+          echo "=== 11. IPA file size ==="
+          du -sh "$IPA_PATH"
+
+          echo "=== Re-verify arch + plist inside the zipped IPA ==="
+          TMP=$(mktemp -d)
+          unzip -q "$IPA_PATH" -d "$TMP"
+          INNER=$(find "$TMP/Payload" -maxdepth 1 -name "*.app" -type d | head -1)
+          echo "4/5. lipo -info on zipped binary:"
+          lipo -info "$INNER/$(basename "$INNER" .app)"
+          echo "plutil -lint on zipped Info.plist:"
+          plutil -lint "$INNER/Info.plist"
+          rm -rf "$TMP"
+
+          echo ""
+          echo "::notice::This is an UNSIGNED physical-device IPA. It requires signing (e.g. with Sideloadly) before it can be installed on an iPhone/iPad. See docs/IPA_SIGNING.md."
+
+      # ───────────────────────────────────────────────────────────────
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.config.outputs.artifact_name }}
+          path: ${{ steps.package_ipa.outputs.IPA_PATH }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload build/pod-install logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: failure-logs-sdk${{ steps.config.outputs.sdk }}
+          path: |
+            /tmp/xcodebuild.log
+            /tmp/pod-install.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # ───────────────────────────────────────────────────────────────
+      # Opt-in only (workflow_dispatch input create_release, default
+      # false). Does not touch, replace, or delete any existing release
+      # -- gh release create fails loudly (not silently overwrites) if
+      # the computed tag already exists, which is what we want.
+      # ───────────────────────────────────────────────────────────────
+      - name: Publish GitHub Release (optional, opt-in)
+        if: ${{ success() && inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="expo-go-sdk${{ steps.config.outputs.sdk }}-$(date +%Y%m%d-%H%M%S)"
+          gh release create "$TAG" \
+            "${{ steps.package_ipa.outputs.IPA_PATH }}" \
+            --title "Expo Go SDK ${{ steps.config.outputs.sdk }} for iOS (unsigned, ${TAG})" \
+            --notes "Unsigned physical-device (arm64) IPA built from expo/expo @ \`${{ steps.config.outputs.expo_ref }}\`. Requires signing with Sideloadly before install -- see docs/IPA_SIGNING.md. This is an automated build; the original reference SDK 57 release for this repo was uploaded manually by the project owner and is not replaced by this."
+
+      - name: Build summary
+        if: success()
+        run: |
+          echo "## Expo Go SDK ${{ steps.config.outputs.sdk }} -- unsigned IPA built" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- SDK: \`${{ steps.config.outputs.sdk }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Source: expo/expo @ \`${{ steps.config.outputs.expo_ref }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Bundle ID: \`host.exp.Exponent\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Min iOS: ${{ steps.config.outputs.min_ios }} (built with the iphoneos SDK from Xcode ${{ inputs.xcode_version }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Architecture: arm64 (physical device, not simulator)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Signing: none -- **unsigned physical-device IPA, requires signing before installation** (e.g. Sideloadly + your free Apple ID, see docs/IPA_SIGNING.md)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- IPA filename: \`${{ steps.package_ipa.outputs.IPA_FILENAME }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Artifact name: \`${{ steps.config.outputs.artifact_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download the \`${{ steps.config.outputs.artifact_name }}\` artifact from this run." >> "$GITHUB_STEP_SUMMARY"
