@@ -1,5 +1,9 @@
 # BUILD_ARCHITECTURE.md
 
+<p align="center">
+  <img src="assets/architecture-diagram.svg" alt="Ten-stage build pipeline: your machine, this GitHub repo, GitHub Actions, checkout expo/expo, Expo Go workspace, xcodebuild, validate and package, Actions artifact, Sideloadly, iPhone or iPad" width="100%">
+</p>
+
 ## End-to-end pipeline
 
 ```

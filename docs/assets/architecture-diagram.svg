@@ -1,0 +1,107 @@
+<svg viewBox="0 0 1200 502" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Build pipeline architecture">
+  <rect width="1200" height="502" rx="14" fill="#0B1120"/>
+  <rect x="0.5" y="0.5" width="1199" height="501" rx="13.5" fill="none" stroke="#1E2740" stroke-width="1"/>
+  <text x="60" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="24" fill="#F3F6FB">How a build becomes an app on your phone</text>
+  <text x="60" y="70" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="13" fill="#8C97B4">one workflow run &#183; ten stages &#183; zero Apple Developer account</text>
+
+  <g>
+    <rect x="20.0" y="108" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="20.0" y="108" width="200" height="4" rx="2" fill="#7C8AA8"/>
+    <text x="36.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#7C8AA8">01</text>
+    <text x="36.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Your machine</text>
+    <text x="36.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">Windows, macOS, or Linux</text>
+  </g>
+
+  <g>
+    <rect x="260.0" y="108" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="260.0" y="108" width="200" height="4" rx="2" fill="#7C8AA8"/>
+    <text x="276.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#7C8AA8">02</text>
+    <text x="276.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">This GitHub repo</text>
+    <text x="276.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">git push / Run workflow</text>
+  </g>
+
+  <g>
+    <rect x="500.0" y="108" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="500.0" y="108" width="200" height="4" rx="2" fill="#22D3EE"/>
+    <text x="516.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#22D3EE">03</text>
+    <text x="516.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">GitHub Actions</text>
+    <text x="516.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">free macOS runner</text>
+  </g>
+
+  <g>
+    <rect x="740.0" y="108" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="740.0" y="108" width="200" height="4" rx="2" fill="#22D3EE"/>
+    <text x="756.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#22D3EE">04</text>
+    <text x="756.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Checkout expo/expo</text>
+    <text x="756.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">sdk-56 or sdk-57 branch</text>
+  </g>
+
+  <g>
+    <rect x="980.0" y="108" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="980.0" y="108" width="200" height="4" rx="2" fill="#22D3EE"/>
+    <text x="996.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#22D3EE">05</text>
+    <text x="996.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Expo Go workspace</text>
+    <text x="996.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">pnpm install, pod install</text>
+  </g>
+
+  <g>
+    <rect x="20.0" y="298" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="20.0" y="298" width="200" height="4" rx="2" fill="#22D3EE"/>
+    <text x="36.0" y="326" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#22D3EE">06</text>
+    <text x="36.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">xcodebuild</text>
+    <text x="36.0" y="371" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">iphoneos, unsigned</text>
+  </g>
+
+  <g>
+    <rect x="260.0" y="298" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="260.0" y="298" width="200" height="4" rx="2" fill="#F5B84E"/>
+    <text x="276.0" y="326" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#F5B84E">07</text>
+    <text x="276.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Validate &amp; package</text>
+    <text x="276.0" y="371" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">produces the .ipa</text>
+  </g>
+
+  <g>
+    <rect x="500.0" y="298" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="500.0" y="298" width="200" height="4" rx="2" fill="#F5B84E"/>
+    <text x="516.0" y="326" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#F5B84E">08</text>
+    <text x="516.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Actions artifact</text>
+    <text x="516.0" y="371" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">download as a .zip</text>
+  </g>
+
+  <g>
+    <rect x="740.0" y="298" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="740.0" y="298" width="200" height="4" rx="2" fill="#39D98A"/>
+    <text x="756.0" y="326" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#39D98A">09</text>
+    <text x="756.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Sideloadly</text>
+    <text x="756.0" y="371" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">signs with your Apple ID</text>
+  </g>
+
+  <g>
+    <rect x="980.0" y="298" width="200" height="108" rx="10" fill="#131C31" stroke="#28324C" stroke-width="1"/>
+    <rect x="980.0" y="298" width="200" height="4" rx="2" fill="#39D98A"/>
+    <text x="996.0" y="326" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#39D98A">10</text>
+    <text x="996.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">iPhone / iPad</text>
+    <text x="996.0" y="371" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">Expo Go, installed</text>
+  </g>
+  <path d="M 234.0 157.0 L 244.0 162.0 L 234.0 167.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 474.0 157.0 L 484.0 162.0 L 474.0 167.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 714.0 157.0 L 724.0 162.0 L 714.0 167.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 954.0 157.0 L 964.0 162.0 L 954.0 167.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 234.0 347.0 L 244.0 352.0 L 234.0 357.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 474.0 347.0 L 484.0 352.0 L 474.0 357.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 714.0 347.0 L 724.0 352.0 L 714.0 357.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 954.0 347.0 L 964.0 352.0 L 954.0 357.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M 1080.0 218.0 L 1080.0 257.0 L 120.0 257.0 L 120.0 289.0"
+        fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 6"/>
+  <path d="M 115.0 289.0 L 120.0 299.0 L 125.0 289.0" fill="none" stroke="#3A4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="20.0" y="462" width="11" height="11" rx="3" fill="#7C8AA8"/>
+  <text x="38.0" y="472.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#8C97B4">Trigger</text>
+  <rect x="123.1" y="462" width="11" height="11" rx="3" fill="#22D3EE"/>
+  <text x="141.1" y="472.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#8C97B4">Build (macOS runner)</text>
+  <rect x="321.1" y="462" width="11" height="11" rx="3" fill="#F5B84E"/>
+  <text x="339.1" y="472.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#8C97B4">Package</text>
+  <rect x="424.2" y="462" width="11" height="11" rx="3" fill="#39D98A"/>
+  <text x="442.2" y="472.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#8C97B4">Sign &amp; install (local)</text>
+</svg>
