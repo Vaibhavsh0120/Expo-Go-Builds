@@ -233,6 +233,18 @@ jobs:
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
 
       # ───────────────────────────────────────────────────────────────
+      # Checks out THIS repository (the builder repo itself) to the
+      # workspace root. Needed so later steps can read files committed
+      # here -- specifically patches/sdk56/** (see "Apply known SDK 56
+      # source patches" below). No previous step in this workflow
+      # checked out this repo's own content; the expo/expo checkout
+      # below is a DIFFERENT repository entirely, fetched to its own
+      # `expo-src` subdirectory.
+      # ───────────────────────────────────────────────────────────────
+      - name: Checkout this repository (for patches/scripts)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # ───────────────────────────────────────────────────────────────
       # Checks out a DIFFERENT public repo (expo/expo), not this one.
       # `submodules: recursive` pulls in react-native-lab/react-native
       # (Expo's React Native fork). With the URL rewrite above in place,
@@ -260,6 +272,44 @@ jobs:
           git log -1 --format="%H %ci %s"
           echo "=== apps/expo-go/sdkVersions.json (embedded SDK version) ==="
           cat apps/expo-go/sdkVersions.json || echo "::warning::sdkVersions.json not found at expected path"
+
+      # ───────────────────────────────────────────────────────────────
+      # Fixes a confirmed upstream bug in expo/expo's sdk-56 branch, not
+      # something this workflow introduces. Full writeup:
+      # docs/SDK_56.md#known-upstream-issue-scenegeometry and
+      # docs/TROUBLESHOOTING.md#scenegeometry-cannot-find-in-scope-sdk-56.
+      #
+      # Summary: sdk-56 backported commit 735ce71 into
+      # packages/expo-screen-capture, which calls
+      # `SceneGeometry.keyWindow()` -- but never backported
+      # SceneGeometry.swift itself from expo-modules-core, where it's
+      # defined on `main`. This makes an unmodified sdk-56 checkout fail
+      # to compile with "cannot find 'SceneGeometry' in scope".
+      #
+      # This step copies in a verified, verbatim copy of that utility
+      # file (patches/sdk56/SceneGeometry.swift, sourced from expo/expo
+      # `main` -- see that file's own header comment for full
+      # provenance) -- but ONLY if expo-modules-core doesn't already
+      # have one. That check makes this patch self-deprecating: once
+      # Expo fixes the incomplete backport upstream, this step will see
+      # the file already exists and skip itself automatically, so it
+      # won't shadow or conflict with an eventual real fix.
+      #
+      # This only runs for SDK 56 -- SDK 57 already has SceneGeometry
+      # natively and needs no patch.
+      # ───────────────────────────────────────────────────────────────
+      - name: Apply known SDK 56 source patches
+        if: ${{ steps.config.outputs.sdk == '56' }}
+        run: |
+          TARGET="expo-src/packages/expo-modules-core/ios/Utilities/SceneGeometry.swift"
+          if [ -f "$TARGET" ]; then
+            echo "$TARGET already exists in this checkout -- upstream appears to have fixed the incomplete sdk-56 backport. Skipping patch (patches/sdk56/SceneGeometry.swift is now unnecessary; consider removing it)."
+          else
+            mkdir -p "$(dirname "$TARGET")"
+            cp patches/sdk56/SceneGeometry.swift "$TARGET"
+            echo "Patched: copied patches/sdk56/SceneGeometry.swift -> $TARGET"
+            echo "::notice::Applied a source patch for a known incomplete backport in expo/expo's sdk-56 branch (missing SceneGeometry.swift). See docs/SDK_56.md for details."
+          fi
 
       # ───────────────────────────────────────────────────────────────
       # Brewfile (repo root) requires cmake + ninja: Expo Go builds

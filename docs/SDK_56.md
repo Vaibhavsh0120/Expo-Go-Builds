@@ -120,13 +120,73 @@ Same eleven checks as SDK 57 — see [SDK_57.md](SDK_57.md#validation-steps)
 for the full list; they're SDK-agnostic and applied identically regardless
 of which SDK you build.
 
+## Known upstream issue: `SceneGeometry` (confirmed, patched)
+
+**This was hit and confirmed on a real GitHub Actions run** (2026-08-16):
+an unmodified `sdk-56` checkout fails to compile with:
+
+```
+expo-src/packages/expo-screen-capture/ios/ScreenCaptureModule.swift:14:
+cannot find 'SceneGeometry' in scope
+```
+
+**Root cause, traced to the exact commit**: `sdk-56` backported commit
+`735ce71` ("[ios][screen-capture] Resolve the key window from the
+foregrounded scene (#48372)", 2026-08-13) into
+`packages/expo-screen-capture` — this changed `ScreenCaptureModule.swift`
+to call `SceneGeometry.keyWindow()`. That commit touches *only*
+`expo-screen-capture`'s own files (verified via `git show 735ce71
+--stat`) — it never brought over `SceneGeometry.swift` itself, which is
+defined in `packages/expo-modules-core/ios/Utilities/SceneGeometry.swift`
+on `main` but, as of `sdk-56` commit `21be29ff` (2026-08-14), does not
+exist anywhere in the `sdk-56` tree (`git ls-tree -r sdk-56 | grep -i
+scenegeometry` returns nothing). This is a genuine, isolated incomplete
+backport on Expo's own release branch — not a problem with this
+repository's workflow, checkout, or toolchain choices.
+
+**Blast radius, verified isolated**: `git log c87637c..sdk-56 --oneline --
+packages/expo-screen-capture/` shows exactly one commit (`735ce71`) touched
+that package between the last-known-good commit and the current branch
+tip, and `ScreenCaptureModule.swift` has exactly one reference to
+`SceneGeometry` (line 14). The package's other source file,
+`AnimatedBlurEffectView.swift`, has none.
+
+**Fix applied**: `patches/sdk56/SceneGeometry.swift` in this repository is
+a verbatim copy of the real `SceneGeometry.swift` from `expo/expo`'s
+`main` branch (self-contained — imports only `UIKit`, no other
+main-only-added dependencies). The workflow's **"Apply known SDK 56 source
+patches"** step copies it into the checked-out tree, but *only* if
+`expo-modules-core` doesn't already have that file — so the patch
+automatically stops doing anything the moment Expo fixes the incomplete
+backport upstream. It runs after checkout and before `pod install`, so
+CocoaPods' `source_files` glob (`ios/**/*.{h,m,mm,swift,cpp}` — verified
+via `ExpoModulesCore.podspec`) picks the new file up and compiles it as
+part of the `ExpoModulesCore` target, same as any other file in that
+directory.
+
+**What was *not* independently verified**: whether this exact file
+compiles cleanly in *this* pipeline's specific Xcode/Swift toolchain — it
+was verified by source comparison (self-contained, actively compiling on
+`main` right now) rather than by an actual local compile, since no
+macOS/Xcode is available in the environment that produced this patch. If
+it turns out not to compile for some other reason, the fallback is to
+pin `expo_ref` to `c87637c7ae07b8e38786015c481250aa5f03da4b` (the last
+`sdk-56` commit before the broken backport), which sidesteps the issue
+entirely by not including the offending code at all — see
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md#scenegeometry-cannot-find-in-scope-sdk-56).
+
+**Worth doing**: this looks like a genuine bug worth reporting at
+[github.com/expo/expo/issues](https://github.com/expo/expo/issues) —
+anyone else building `sdk-56` Expo Go from source will hit the same
+failure until Expo backports the missing file themselves.
+
 ## Known limitations
 
-- Not yet built through the actual GitHub Actions pipeline as of this
-  writing — see [Verification status](#verification-status) below.
 - Same free-Apple-ID entitlement limitations as SDK 57 apply (push,
   Sign In with Apple, Associated Domains, iCloud) — see
   [IPA_SIGNING.md](IPA_SIGNING.md).
+- See the confirmed upstream issue above — patched, but not compile-
+  verified independently of Expo's own `main` branch CI.
 
 ## Verification status
 
@@ -138,5 +198,6 @@ Be precise about what's actually been confirmed:
 | Node/pnpm/Ruby/CocoaPods/Xcode/runner versions | ✅ Verified from source (direct read of `sdk-56`'s own files, byte-diffed against `sdk-57`) |
 | `.gitmodules`/Brewfile/README build recipe identical to SDK 57 | ✅ Verified from source (`diff`) |
 | Min iOS deployment target (16.4) | ✅ Verified from source (`Podfile` + `project.pbxproj`) |
-| Full end-to-end build actually succeeds in GitHub Actions | ⬜ **Unverified until the workflow runs** — this configuration has not yet been exercised by an actual `xcodebuild` run in CI, unlike SDK 57 which has a confirmed working artifact (see [SDK_57.md](SDK_57.md#known-working-state)) |
-| Resulting IPA installs on a real device | ⬜ **Unverified until you run it and test with Sideloadly/SideStore/LiveContainer** |
+| Checkout, native tools, pnpm install, react-native-lab setup, `expo` package build, Ruby/CocoaPods install steps | ✅ **Verified in CI** — a real GitHub Actions run completed all of these steps successfully before failing at `xcodebuild` (see the `SceneGeometry` issue above) |
+| `xcodebuild` (actual compilation) | ⬜ **Blocked on the confirmed `SceneGeometry` issue above** as of the last run; a patch has been applied but not yet re-run |
+| Resulting IPA installs on a real device | ⬜ **Unverified until a full run succeeds and you test with Sideloadly/SideStore/LiveContainer** |

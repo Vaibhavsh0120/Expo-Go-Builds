@@ -111,6 +111,15 @@ resolve SDK config (branch, naming)
 - **The `Resolve SDK-specific configuration` step's case statement** — this
   is the single source of truth for per-SDK values. Don't duplicate SDK
   branching logic elsewhere in the workflow.
+- **`patches/<sdk>/`** — holds small, verbatim, provenance-documented
+  source patches for confirmed upstream gaps on a specific SDK branch
+  (see `patches/sdk56/SceneGeometry.swift` and
+  [DECISIONS.md](DECISIONS.md) for the precedent). Each patch's applying
+  step must check whether the target file already exists before copying,
+  so the patch self-deprecates once Expo fixes the real issue upstream —
+  don't add an unconditional copy. Remove a patch (file + its workflow
+  step + its docs mentions) once you've confirmed upstream has actually
+  fixed the underlying gap, rather than leaving dead patches accumulating.
 
 ## How another AI agent should approach future modifications
 

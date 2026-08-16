@@ -190,6 +190,47 @@ the device's current network (tunnels route through a third-party relay
 and can be affected by that service's own availability, unrelated to this
 repo).
 
+## SceneGeometry: "cannot find in scope" (SDK 56)
+
+**Symptom**: The **"Build Expo Go"** step fails (not a self-healed retry —
+a genuine `Process completed with exit code 65`) with:
+
+```
+expo-src/packages/expo-screen-capture/ios/ScreenCaptureModule.swift:14:
+cannot find 'SceneGeometry' in scope
+```
+
+**Cause**: A confirmed, isolated incomplete backport in `expo/expo`'s own
+`sdk-56` release branch. Full root-cause trace (exact offending commit,
+verified blast radius) in
+[SDK_56.md](SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched).
+In short: `sdk-56` backported a `expo-screen-capture` change that calls
+`SceneGeometry.keyWindow()`, without also backporting the
+`SceneGeometry.swift` utility file it depends on from `expo-modules-core`.
+
+**Fix**: Already applied automatically by this workflow, as of the version
+of `build-expo-go.yml` that includes the **"Apply known SDK 56 source
+patches"** step. If you're seeing this on a run that includes that step,
+one of two things is true:
+
+1. You're on an older run from before the patch was added — re-run the
+   workflow with the current workflow file.
+2. The patch itself didn't resolve it (unexpected — see
+   [SDK_56.md](SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)
+   for what wasn't independently verified about it). In that case, use the
+   fallback: set the `expo_ref` input to
+   `c87637c7ae07b8e38786015c481250aa5f03da4b` (the last `sdk-56` commit
+   before the broken backport landed) and re-run — this sidesteps the
+   issue by not including the offending code at all, at the cost of
+   missing any `sdk-56` commits after that point.
+
+If neither works, check whether Expo has since fixed the incomplete
+backport upstream (search `packages/expo-modules-core/ios/Utilities/` on
+the current `sdk-56` branch tip for `SceneGeometry.swift`) — if they have,
+this workflow's patch step will already have detected that and skipped
+itself, so the failure would have a different cause than the one
+described here.
+
 ## SocketRocket module-cache error
 
 **Symptom**: The **"Build Expo Go"** step's log shows:

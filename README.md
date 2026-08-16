@@ -15,7 +15,7 @@ and no paid Apple Developer account, required.
 | SDK | Status |
 |-----|--------|
 | 57 | ✅ Supported — built, released, and confirmed working on a real device (see [docs/SDK_57.md](docs/SDK_57.md)) |
-| 56 | ✅ Supported — configuration independently verified against Expo's real `sdk-56` source (see [docs/SDK_56.md](docs/SDK_56.md)) |
+| 56 | ⚠️ Supported, patch pending re-verification — toolchain matches SDK 57 exactly, but a real run hit a confirmed upstream Expo bug (now patched, not yet re-confirmed) — see [docs/SDK_56.md](docs/SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched) |
 
 ## Quick Start
 
@@ -139,7 +139,8 @@ change casually and why.
 - **The output IPA is unsigned.** It cannot be installed as-is — it must
   be signed first (Sideloadly, or another tool that performs local
   signing). See [docs/IPA_SIGNING.md](docs/IPA_SIGNING.md).
-- **SDK 56 has not yet been run through this exact GitHub Actions pipeline
-  end-to-end** as of this writing — its configuration is independently
-  verified from Expo's source, but not yet build-tested in CI the way SDK
-  57 has been. See [docs/SDK_56.md](docs/SDK_56.md#verification-status).
+- **SDK 56 hit a real, confirmed issue on its first GitHub Actions run** —
+  a compile failure caused by an incomplete backport in Expo's own
+  `sdk-56` branch (not this repo's config). It's been patched (see
+  [docs/SDK_56.md](docs/SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)),
+  but that patch hasn't been re-run and confirmed successful yet.

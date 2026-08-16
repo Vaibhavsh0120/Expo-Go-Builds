@@ -179,3 +179,58 @@ consistent than special-casing just the one).
 **Impact**: The existing "SDK 57 for iOS" release is untouched by any
 workflow run, opted-in or not — its tag is never referenced or generated
 by the `create_release` step's timestamp-based tagging scheme.
+
+---
+
+## 2026-08-16 — SDK 56's `SceneGeometry` compile failure fixed with a self-deprecating source patch, not a pinned commit
+
+**Decision**: When a real GitHub Actions run confirmed `sdk-56` fails to
+compile (`cannot find 'SceneGeometry' in scope` in
+`expo-screen-capture/ios/ScreenCaptureModule.swift`), the fix implemented
+was a small, embedded source patch (`patches/sdk56/SceneGeometry.swift`,
+copied into the checkout by a new "Apply known SDK 56 source patches"
+step) that only applies if the target file doesn't already exist —
+rather than pinning `expo_ref` to a fixed commit SHA.
+
+**Reason**: The failure was traced to one specific, isolated cause: commit
+`735ce71` on `sdk-56` backported a change to `expo-screen-capture` that
+calls `SceneGeometry.keyWindow()`, without also backporting the
+`SceneGeometry.swift` utility file itself from `expo-modules-core` (which
+exists on `main` but not on `sdk-56`). Pinning `expo_ref` to a commit
+before this backport would "fix" the build but freeze SDK 56 builds at
+that point in time forever, silently missing any later real fixes/patches
+Expo lands on `sdk-56` (including, ironically, if Expo fixes this exact
+issue). A source patch that supplies just the missing file lets the
+workflow keep tracking the live `sdk-56` branch tip (the documented
+default behavior — see the `expo_ref` input's own description) while
+working around only this one specific, well-understood gap.
+
+**Alternatives considered**: Pin `expo_ref` to the last-known-good commit
+(`c87637c7ae07b8e38786015c481250aa5f03da4b`) as the primary fix (rejected
+as the *default* — this is documented instead as an explicit fallback in
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md), since it's simpler/lower-risk
+but freezes the branch); fetching `SceneGeometry.swift` live from
+`expo/expo`'s `main` branch at build time via `curl`/`git show` instead of
+committing a copy into this repo (rejected — makes the build depend on
+`main`'s content at whatever moment it happens to run, which could change
+or even be removed without warning; a committed copy is deterministic and
+auditable); patching `ScreenCaptureModule.swift` itself to revert to the
+older pre-`SceneGeometry` keyWindow lookup instead of supplying the
+missing dependency (rejected — more invasive, and diverges further from
+what `sdk-56`'s own source actually contains, versus supplying exactly the
+one missing piece).
+
+**Impact**: `patches/sdk56/` exists as a precedent for handling future
+similar per-SDK upstream gaps — see
+[AI_CONTEXT.md](AI_CONTEXT.md#what-not-to-change-casually) for guidance on
+extending this pattern. The patch step's existence-check makes it
+self-deprecating: once Expo fixes the incomplete backport upstream (adding
+`SceneGeometry.swift` to `sdk-56` themselves), this step will detect the
+file already exists and skip applying the patch, requiring no workflow
+change to stay correct — though the stale patch file and step should
+still be removed once that's confirmed, to avoid carrying dead weight.
+This was NOT verified by an actual macOS/Xcode compile in the environment
+that produced the patch (source-only verification — see
+[SDK_56.md](SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)
+for exactly what was and wasn't confirmed); the next actual GitHub Actions
+run is the real test.
