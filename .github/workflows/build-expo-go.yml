@@ -1,9 +1,12 @@
-name: Build Expo Go (unsigned IPA for Sideloadly)
+name: Build Expo Go (iOS IPA + Android APK)
+run-name: SDK ${{ inputs.expo_sdk || 'release watch' }} · IPA + APK
 
-# One workflow for SDK 54-58. The dispatch form exposes only the SDK and
+# One workflow for SDK 52-58. The dispatch form exposes only the SDK and
 # optional release publishing; all source/toolchain settings resolve below.
 # Source verification and build evidence: docs/SDK_SUPPORT.md.
 on:
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       expo_sdk:
@@ -16,6 +19,8 @@ on:
           - "56"
           - "55"
           - "54"
+          - "53"
+          - "52"
         default: "57"
       create_release:
         description: "Also publish this build as a GitHub Release (in addition to the always-uploaded Actions artifact)"
@@ -24,8 +29,8 @@ on:
         default: false
 
 concurrency:
-  group: build-expo-go-${{ inputs.expo_sdk }}
-  cancel-in-progress: true
+  group: build-expo-go-${{ inputs.expo_sdk || 'release-watch' }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -37,10 +42,27 @@ env:
 jobs:
   # Resolve on Linux first so the same SDK case selects the macOS runner
   # as well as its tools. No extra user inputs or duplicated SDK matrix.
+  watch-upstream:
+    name: Watch official Expo SDK releases
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout release watcher
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Dispatch only missing or changed released SDK pairs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/upstream_release.py --watch --repo "$GITHUB_REPOSITORY"
+
   resolve-config:
+    if: github.event_name != 'schedule'
     name: Select SDK source and toolchain
     runs-on: ubuntu-latest
     outputs:
+      source_sha: ${{ steps.upstream.outputs.source_sha }}
       sdk: ${{ steps.config.outputs.sdk }}
       expo_ref: ${{ steps.config.outputs.expo_ref }}
       runner: ${{ steps.config.outputs.runner }}
@@ -75,6 +97,16 @@ jobs:
           SDK_VERSIONS_PATH="apps/expo-go/sdkVersions.json"
 
           case "$SDK" in
+            52|53)
+              RUNNER="macos-15"
+              XCODE_VERSION="16.4"
+              PACKAGE_MANAGER="yarn"
+              PACKAGE_MANAGER_VERSION="1.22.22"
+              MIN_IOS="15.1"
+              MACROS_MODE="legacy"
+              SDK_VERSIONS_PATH="apps/expo-go/ios/Exponent/Supporting/sdkVersions.json"
+              if [ "$SDK" = "52" ]; then NODE_VERSION="20.12.2"; fi
+              ;;
             54)
               RUNNER="macos-15"
               # The release branch now imports DeclaredAgeRange (iOS 26).
@@ -100,7 +132,7 @@ jobs:
               PACKAGE_MANAGER_VERSION="12.2.1"
               ;;
             *)
-              echo "::error::Unsupported SDK. Choose 54, 55, 56, 57, or 58."
+              echo "::error::Unsupported SDK. Choose SDK 52 through 58."
               exit 1
               ;;
           esac
@@ -125,13 +157,32 @@ jobs:
           echo "Node $NODE_VERSION / $PACKAGE_MANAGER $PACKAGE_MANAGER_VERSION / Ruby $RUBY_VERSION"
           echo "Minimum iOS $MIN_IOS; unsigned physical-device build"
 
+      - name: Checkout metadata resolver
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Resolve official release metadata and pin exact source
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SDK: ${{ steps.config.outputs.sdk }}
+        run: python3 scripts/upstream_release.py --sdk "$SDK" --output upstream.json
+      - name: Upload fixed upstream metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ExpoGo-SDK${{ steps.config.outputs.sdk }}-upstream
+          path: upstream.json
+          retention-days: 30
+          if-no-files-found: error
+
   build-expo-go-ios:
     name: Build Expo Go SDK ${{ needs.resolve-config.outputs.sdk }} (unsigned IPA)
     needs: resolve-config
     runs-on: ${{ needs.resolve-config.outputs.runner }}
     timeout-minutes: 180
     permissions:
-      contents: write # Only used when the user ticks create_release.
+      contents: read
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
+      xcode: ${{ steps.xcode.outputs.version }}
     defaults:
       run:
         shell: bash
@@ -179,7 +230,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: expo/expo
-          ref: ${{ needs.resolve-config.outputs.expo_ref }}
+          ref: ${{ needs.resolve-config.outputs.source_sha }}
           path: expo-src
           submodules: recursive
           lfs: true
@@ -224,7 +275,7 @@ jobs:
       - name: Install native build tools (cmake, ninja via Brewfile)
         working-directory: expo-src
         run: |
-          brew bundle
+          if [ -f Brewfile ]; then brew bundle; else brew install cmake ninja; fi
           command -v cmake
           command -v ninja
 
@@ -278,7 +329,11 @@ jobs:
         env:
           PACKAGE_MANAGER: ${{ needs.resolve-config.outputs.package_manager }}
         run: |
-          "$PACKAGE_MANAGER" run install:react-native-lab
+          if node -e 'process.exit(require("./package.json").scripts?.["install:react-native-lab"] ? 0 : 1)'; then
+            "$PACKAGE_MANAGER" run install:react-native-lab
+          else
+            yarn --cwd react-native-lab/react-native install --frozen-lockfile
+          fi
           # Upstream's setup script can mask failures with `|| true`.
           # A real missing submodule install must stop before CocoaPods.
           test -d react-native-lab/react-native/node_modules
@@ -510,43 +565,6 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Publish GitHub Release (optional, opt-in)
-        if: ${{ success() && inputs.create_release }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SDK: ${{ needs.resolve-config.outputs.sdk }}
-          SOURCE_SHA: ${{ steps.source.outputs.sha }}
-          XCODE_VERSION: ${{ steps.xcode.outputs.version }}
-          IPA_PATH: ${{ steps.package_ipa.outputs.IPA_PATH }}
-        run: |
-          TAG="expo-go-sdk${SDK}-$(date +%Y%m%d-%H%M%S)"
-          TAGS_FILE="$RUNNER_TEMP/published-sdk-tags.txt"
-          NOTES_FILE="$RUNNER_TEMP/release-notes-sdk${SDK}.md"
-          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
-            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' > "$TAGS_FILE"
-          LATEST=$(python3 scripts/render_release_notes.py \
-            --sdk "$SDK" --ipa "$IPA_PATH" \
-            --source-sha "$SOURCE_SHA" --builder-sha "$GITHUB_SHA" \
-            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-            --xcode "$XCODE_VERSION" --tags-file "$TAGS_FILE" --output "$NOTES_FILE")
-          gh release create "$TAG" \
-            "$IPA_PATH" \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "Expo Go SDK ${SDK} for iOS (unsigned)" \
-            --latest="$LATEST" \
-            --notes-file "$NOTES_FILE"
-
-      - name: Refresh LiveContainer SDK source
-        if: ${{ success() && inputs.create_release }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          python3 scripts/livecontainer_source.py \
-            --repo "$GITHUB_REPOSITORY" \
-            --cache "$RUNNER_TEMP/livecontainer-source-ipas" \
-            --publish
-
       - name: Build summary
         if: success()
         run: |
@@ -560,6 +578,109 @@ jobs:
           echo "- Signing: none -- **unsigned physical-device IPA, requires signing before installation** (e.g. Sideloadly + your free Apple ID, see docs/IPA_SIGNING.md)" >> "$GITHUB_STEP_SUMMARY"
           echo "- IPA filename: \`${{ steps.package_ipa.outputs.IPA_FILENAME }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Artifact name: \`${{ needs.resolve-config.outputs.artifact_name }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- LiveContainer source: https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/apps.json (updated when publishing a release)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Download the \`${{ needs.resolve-config.outputs.artifact_name }}\` artifact from this run." >> "$GITHUB_STEP_SUMMARY"
+
+  prepare-android:
+    name: Verify Expo-signed SDK ${{ needs.resolve-config.outputs.sdk }} APK
+    needs: resolve-config
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout APK verifier
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Download fixed upstream metadata
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ExpoGo-SDK${{ needs.resolve-config.outputs.sdk }}-upstream
+          path: metadata
+      - name: Download and verify original signed APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SDK: ${{ needs.resolve-config.outputs.sdk }}
+        run: python3 scripts/android_release.py --sdk "$SDK" --metadata metadata/upstream.json --output-dir apk-output
+      - name: Upload verified APK and provenance artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ExpoGo-SDK${{ needs.resolve-config.outputs.sdk }}-Android
+          path: apk-output/*
+          retention-days: 30
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish SDK ${{ needs.resolve-config.outputs.sdk }} IPA + APK
+    needs: [resolve-config, build-expo-go-ios, prepare-android]
+    if: ${{ success() && inputs.create_release }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-expo-go-releases
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SDK: ${{ needs.resolve-config.outputs.sdk }}
+      SOURCE_SHA: ${{ needs.build-expo-go-ios.outputs.source_sha }}
+      XCODE_VERSION: ${{ needs.build-expo-go-ios.outputs.xcode }}
+    steps:
+      - name: Checkout publisher
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Download IPA artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ needs.resolve-config.outputs.artifact_name }}
+          path: release-assets
+      - name: Download verified Android artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ExpoGo-SDK${{ needs.resolve-config.outputs.sdk }}-Android
+          path: release-assets
+      - name: Download upstream metadata
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ExpoGo-SDK${{ needs.resolve-config.outputs.sdk }}-upstream
+          path: metadata
+      - name: Publish verified platform pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="expo-go-sdk${SDK}-$(date -u +%Y%m%d-%H%M%S)"
+          IPA_PATH="release-assets/ExpoGo-SDK${SDK}-unsigned.ipa"
+          APK_PATH="release-assets/ExpoGo-SDK${SDK}.apk"
+          RECEIPT="release-assets/ExpoGo-SDK${SDK}-android.json"
+          test -s "$IPA_PATH" && test -s "$APK_PATH" && test -s "$RECEIPT"
+          export TAG RECEIPT
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["RECEIPT"])
+          receipt = json.loads(path.read_text())
+          receipt["downloadURL"] = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{os.environ['TAG']}/{receipt['filename']}"
+          path.write_text(json.dumps(receipt, indent=2) + "\n")
+          PY
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' > "$RUNNER_TEMP/sdk-tags.txt"
+          LATEST=$(python3 scripts/render_release_notes.py \
+            --sdk "$SDK" --ipa "$IPA_PATH" --apk-receipt "$RECEIPT" \
+            --upstream-metadata metadata/upstream.json \
+            --source-sha "$SOURCE_SHA" --builder-sha "$GITHUB_SHA" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --xcode "$XCODE_VERSION" --tags-file "$RUNNER_TEMP/sdk-tags.txt" --output "$RUNNER_TEMP/notes.md")
+          # Tag current main, which GITHUB_TOKEN may write. A stale workflow-edit
+          # commit can require workflows:write and cause HTTP 403. The real
+          # builder and Expo commits remain explicitly recorded in the notes.
+          gh release create "$TAG" "$IPA_PATH" "$APK_PATH" "$RECEIPT" \
+            --repo "$GITHUB_REPOSITORY" --target main \
+            --title "Expo Go SDK ${SDK} for iOS and Android" \
+            --latest="$LATEST" --notes-file "$RUNNER_TEMP/notes.md"
+      - name: Refresh LiveContainer SDK source
+        run: python3 scripts/livecontainer_source.py --repo "$GITHUB_REPOSITORY" --publish
+      - name: Refresh Android download catalog
+        run: python3 scripts/download_catalog.py --repo "$GITHUB_REPOSITORY" --publish
+      - name: Release summary
+        run: |
+          echo "## SDK $SDK published for iOS and Android" >> "$GITHUB_STEP_SUMMARY"
+          echo "Unsigned community IPA + original Expo-signed APK, with sizes, hashes, and provenance in the release notes." >> "$GITHUB_STEP_SUMMARY"
+          echo "https://github.com/$GITHUB_REPOSITORY/releases" >> "$GITHUB_STEP_SUMMARY"

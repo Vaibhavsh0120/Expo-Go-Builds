@@ -17,7 +17,7 @@ import urllib.request
 import zipfile
 
 
-SUPPORTED_SDKS = {54, 55, 56, 57, 58}
+SUPPORTED_SDKS = {52, 53, 54, 55, 56, 57, 58}
 DEFAULT_REPO = "Vaibhavsh0120/Expo-Go-IOS-IPA-Builder"
 
 
@@ -64,7 +64,9 @@ def ipa_metadata(path: Path, sdk: int) -> dict:
             raise ValueError("Expected exactly one app Info.plist in the IPA")
         info = plistlib.loads(archive.read(roots[0]))
     version = str(info["CFBundleShortVersionString"])
-    if info["CFBundleIdentifier"] != "host.exp.Exponent" or version.split(".")[0] != str(sdk):
+    legacy = {52: "2.32.", 53: "2.33."}
+    valid_version = version.startswith(legacy[sdk]) if sdk in legacy else version.split(".")[0] == str(sdk)
+    if info["CFBundleIdentifier"] != "host.exp.Exponent" or not valid_version:
         raise ValueError(f"IPA bundle or version does not match Expo Go SDK {sdk}")
     return {
         "bundleIdentifier": info["CFBundleIdentifier"], "version": version,

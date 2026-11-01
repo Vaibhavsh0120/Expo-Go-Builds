@@ -39,6 +39,8 @@ class SdkDispatchTests(unittest.TestCase):
 
     def test_each_sdk_selects_its_verified_toolchain(self):
         expected = {
+            "52": ("macos-15", "16.4", "20.12.2", "yarn", "1.22.22", "15.1", "legacy"),
+            "53": ("macos-15", "16.4", "22.14.0", "yarn", "1.22.22", "15.1", "legacy"),
             "54": ("macos-15", "26.2", "22.14.0", "yarn", "1.22.22", "15.1", "legacy"),
             "55": ("macos-15", "26.2", "22.14.0", "yarn", "1.22.22", "15.1", "shell"),
             "56": ("macos-26", "26.4.1", "22.14.0", "pnpm", "10", "16.4", "shell"),
@@ -84,7 +86,7 @@ class SdkDispatchTests(unittest.TestCase):
         workflow = yaml.load(WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
         inputs = workflow["on"]["workflow_dispatch"]["inputs"]
         self.assertEqual(set(inputs), {"expo_sdk", "create_release"})
-        self.assertEqual(inputs["expo_sdk"]["options"], ["58", "57", "56", "55", "54"])
+        self.assertEqual(inputs["expo_sdk"]["options"], ["58", "57", "56", "55", "54", "53", "52"])
         self.assertEqual(inputs["expo_sdk"]["default"], "57")
         self.assertEqual(inputs["create_release"]["type"], "boolean")
         self.assertEqual(inputs["create_release"]["default"], "false")
@@ -92,6 +94,29 @@ class SdkDispatchTests(unittest.TestCase):
     def test_only_one_build_workflow_is_dispatchable(self):
         workflows = sorted((ROOT / ".github/workflows").glob("*.y*ml"))
         self.assertEqual(workflows, [WORKFLOW])
+
+    def test_platform_jobs_publish_together_with_scoped_write_permission(self):
+        jobs = self.workflow["jobs"]
+        self.assertEqual(jobs["build-expo-go-ios"]["permissions"]["contents"], "read")
+        self.assertEqual(jobs["prepare-android"]["permissions"]["contents"], "read")
+        publish = jobs["publish-release"]
+        self.assertEqual(publish["permissions"]["contents"], "write")
+        self.assertEqual(set(publish["needs"]), {"resolve-config", "build-expo-go-ios", "prepare-android"})
+        command = next(s["run"] for s in publish["steps"] if s["name"] == "Publish verified platform pair")
+        self.assertIn('--target main', command)
+        self.assertNotIn('--target "$GITHUB_SHA"', command)
+        self.assertIn('"$IPA_PATH" "$APK_PATH" "$RECEIPT"', command)
+        self.assertIn('--builder-sha "$GITHUB_SHA"', command)
+        self.assertIn('inputs.create_release', publish["if"])
+        checkout = next(s for s in jobs["build-expo-go-ios"]["steps"] if s.get("with", {}).get("repository") == "expo/expo")
+        self.assertEqual(checkout["with"]["ref"], "${{ needs.resolve-config.outputs.source_sha }}")
+
+    def test_schedule_watches_upstream_without_adding_a_second_workflow(self):
+        workflow = yaml.load(WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+        self.assertEqual(workflow["on"]["schedule"][0]["cron"], "17 */6 * * *")
+        self.assertEqual(workflow["jobs"]["watch-upstream"]["permissions"]["actions"], "write")
+        self.assertEqual(workflow["jobs"]["watch-upstream"]["if"], "github.event_name == 'schedule'")
+        self.assertEqual(workflow["jobs"]["resolve-config"]["if"], "github.event_name != 'schedule'")
 
     def test_every_shell_step_has_valid_bash_syntax(self):
         for job in self.workflow["jobs"].values():
