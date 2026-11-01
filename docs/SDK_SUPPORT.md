@@ -91,6 +91,13 @@ That runner substitution needs its own native build verification.
 | 57 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31938038257) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk57-20260816-094039). Earlier device testing via SideStore/LiveContainer was reported by the owner; see [SDK_57.md](SDK_57.md). |
 | 58 | Source configuration and local dispatch checks verified; this builder's native compilation and device installation are not yet verified. |
 
+The original August build logs were recovered on November 1, 2026:
+SDK 56 built Expo commit `21be29ff1a27822a243b1b7b8bd1bdc963b6dae9`, and
+SDK 57 built `0d3eccbbe5d0344dbe112f0eeecd061b3959add7`. Their published
+release notes now include these commits and the GitHub asset digests.
+The SDK 57 IPA predates Expo's August 27 React Native 0.86.3/Hermes fix;
+do not equate that historical artifact with the newer inspected branch.
+
 Historical successful builds do not prove every later upstream branch tip
 will compile. The workflow deliberately tracks each selected release branch.
 Local checks validate configuration and scripts, not an iOS binary.

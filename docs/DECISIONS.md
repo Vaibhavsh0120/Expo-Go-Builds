@@ -262,3 +262,21 @@ the image default if retired; future compatibility needs build evidence.
 and distinguishes local/source checks from historical native builds and
 device testing. The earlier SDK 56 pending-build status was corrected
 against the successful August run and published IPA.
+
+## 2026-11-01 — Per-SDK notes and Releases-first downloads
+
+**Decision**: Keep the README focused on downloading an IPA from GitHub
+Releases, followed by local signing. Show ticks for SDK builder support,
+and keep detailed verification evidence in the support document.
+
+**Release notes**: Maintain `releases/sdk-54.md` through `sdk-58.md`, with
+verified upstream dates and SDK-specific context. The existing workflow
+appends actual build provenance and SHA-256 via a notes file. Published
+SDK tags are compared numerically before assigning Latest to a new build.
+
+**Existing releases**: SDK 57 and 56 were already in the correct SDK order.
+Their titles and notes were updated in place, using recovered build logs;
+their tags, asset IDs, sizes, hashes, URLs, and publication dates were
+preserved. No release deletion or recreation was needed. The SDK 57 note
+explicitly identifies that its August 16 artifact predates the August 27
+Hermes fix. Notes for other SDKs do not claim a published IPA exists.

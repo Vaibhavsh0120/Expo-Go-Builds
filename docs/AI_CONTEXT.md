@@ -65,6 +65,17 @@ app diagnostics → package and check ZIP → artifact → optional release.
   not need a paid build provider. SDK 58 upstream's Blacksmith runner is
   not a requirement for this repository.
 
+## Release notes
+
+Maintain one note per SDK in `releases/sdk-<N>.md`, with upstream SDK date,
+feature context, minimum iOS, and signing/compatibility information.
+`scripts/render_release_notes.py` adds the actual build provenance and
+artifact digest for the workflow's `--notes-file` release publishing.
+Keep the original SDK release date distinct from IPA build/publication
+dates. Do not claim an old SDK 57 IPA includes later Hermes fixes without
+checking its exact source commit. Published release titles and notes may
+be edited in place when authorized; preserve asset IDs, digests, and tags.
+
 ## Verification and evidence
 
 Run `python -m unittest discover -s tests -v` (dependencies in

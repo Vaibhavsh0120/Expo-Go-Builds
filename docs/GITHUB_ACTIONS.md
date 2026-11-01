@@ -46,6 +46,13 @@ targets the builder commit that ran; release notes also identify the
 exact upstream Expo commit. An existing tag causes publishing to fail
 instead of being overwritten.
 
+Each release uses its [SDK-specific notes](../releases/README.md), with
+Expo's original SDK release date and compatibility information. The
+workflow appends the exact source and builder commits, Actions run,
+actual Xcode, IPA size, and SHA-256. It compares published SDK tags before
+setting Latest, so an older SDK build does not automatically take that
+badge from a newer SDK.
+
 All output is **unsigned** and must be signed locally before installation.
 See [IPA_SIGNING.md](IPA_SIGNING.md).
 

@@ -512,14 +512,28 @@ jobs:
         if: ${{ success() && inputs.create_release }}
         env:
           GH_TOKEN: ${{ github.token }}
+          SDK: ${{ needs.resolve-config.outputs.sdk }}
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          XCODE_VERSION: ${{ steps.xcode.outputs.version }}
+          IPA_PATH: ${{ steps.package_ipa.outputs.IPA_PATH }}
         run: |
-          TAG="expo-go-sdk${{ needs.resolve-config.outputs.sdk }}-$(date +%Y%m%d-%H%M%S)"
+          TAG="expo-go-sdk${SDK}-$(date +%Y%m%d-%H%M%S)"
+          TAGS_FILE="$RUNNER_TEMP/published-sdk-tags.txt"
+          NOTES_FILE="$RUNNER_TEMP/release-notes-sdk${SDK}.md"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' > "$TAGS_FILE"
+          LATEST=$(python3 scripts/render_release_notes.py \
+            --sdk "$SDK" --ipa "$IPA_PATH" \
+            --source-sha "$SOURCE_SHA" --builder-sha "$GITHUB_SHA" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --xcode "$XCODE_VERSION" --tags-file "$TAGS_FILE" --output "$NOTES_FILE")
           gh release create "$TAG" \
-            "${{ steps.package_ipa.outputs.IPA_PATH }}" \
+            "$IPA_PATH" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Expo Go SDK ${{ needs.resolve-config.outputs.sdk }} for iOS (unsigned, ${TAG})" \
-            --notes "Unsigned physical-device (arm64) IPA built from expo/expo @ \`${{ needs.resolve-config.outputs.expo_ref }}\` (commit \`${{ steps.source.outputs.sha }}\`). Requires signing with Sideloadly before install -- see docs/IPA_SIGNING.md. This is an automated build; the original reference SDK 57 release for this repo was uploaded manually by the project owner and is not replaced by this."
+            --title "Expo Go SDK ${SDK} for iOS (unsigned)" \
+            --latest="$LATEST" \
+            --notes-file "$NOTES_FILE"
 
       - name: Build summary
         if: success()
