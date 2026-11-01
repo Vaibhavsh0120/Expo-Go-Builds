@@ -44,6 +44,14 @@ class AndroidReleaseTests(unittest.TestCase):
         release["body"] = "old release without exact upstream version receipt"
         self.assertEqual(upstream.pending_sdks(versions(), [release]), [58])
 
+    def test_future_sdk_needs_review_only_when_stable_clients_exist(self):
+        future = versions(59)
+        self.assertEqual(upstream.unreviewed_releases(future), [59])
+        future["sdkVersions"]["59.0.0"]["androidClientVersion"] = "59.0.0-beta.1"
+        self.assertEqual(upstream.unreviewed_releases(future), [])
+        future["sdkVersions"]["59.0.0"].pop("androidClientVersion")
+        self.assertEqual(upstream.unreviewed_releases(future), [])
+
     def test_actual_apk_identity_and_signature_must_verify(self):
         signature = "Verifies\nVerified using v2 scheme (APK Signature Scheme v2): true\nV2 Signer: certificate SHA-256 digest: " + "a" * 64
         badging = "package: name='host.exp.exponent' versionCode='465' versionName='58.0.5'\nsdkVersion:'24'"
@@ -60,9 +68,27 @@ class AndroidReleaseTests(unittest.TestCase):
             with patch.object(android, "android_tool", return_value="tool"), patch.object(android.subprocess, "run", side_effect=[completed(signature), completed(badging.replace("host.exp.exponent", "attacker.package"))]):
                 with self.assertRaises(ValueError):
                     android.verify_apk(path, 58)
+
             with patch.object(android, "android_tool", return_value="tool"), patch.object(android.subprocess, "run", return_value=completed("DOES NOT VERIFY")):
                 with self.assertRaises(ValueError):
                     android.verify_apk(path, 58)
+
+    def test_sdk52_metadata_exception_is_limited_to_verified_historical_bytes(self):
+        expected = "217621eb008e22146470336761f9fe5f69e20c608f4595b088be6bc7bfe775f9"
+        metadata = {"sdk": 52, "iosClientVersion": "2.32.18", "androidClientVersion": "2.32.20"}
+        asset = {"id": 123, "size": 3, "digest": "sha256:" + expected}
+        actual = {"version": "2.32.19", "signatureVerified": True}
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "ExpoGo-SDK52.apk"
+            path.write_bytes(b"APK")
+            with patch.object(android, "official_asset", return_value=asset), patch.object(android, "digest_file", return_value=expected), patch.object(android, "verify_apk", return_value=actual):
+                _, receipt = android.prepare(metadata, Path(temp))
+                self.assertEqual(receipt["version"], "2.32.19")
+                self.assertIn("signed APK manifest", receipt["versionMetadataNote"])
+            actual["version"] = "2.32.18"
+            with patch.object(android, "official_asset", return_value=asset), patch.object(android, "digest_file", return_value=expected), patch.object(android, "verify_apk", return_value=actual):
+                with self.assertRaises(ValueError):
+                    android.prepare(metadata, Path(temp))
 
 
 if __name__ == "__main__":

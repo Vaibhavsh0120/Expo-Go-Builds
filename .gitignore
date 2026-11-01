@@ -1,2 +1,24 @@
 __pycache__/
 *.pyc
+/.playwright-mcp
+# Local browser and assistant tooling generated during development
+.playwright-mcp/
+web/.claude/
+web/.better-design/
+web/CLAUDE.md
+web/AGENTS.md
+
+# Local release preparation and credentials; binaries belong in Releases
+apk-output/
+ipa-output/
+upstream.json
+*.apk
+*.ipa
+*.zip
+*.log
+*.keystore
+*.jks
+.env
+.env.*
+.vercel/
+.DS_Store

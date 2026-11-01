@@ -20,7 +20,7 @@ use case on a public repo); cross-compilation (not possible for iOS/Xcode
 targets).
 
 **Impact**: The repo must stay public to keep this free (documented in
-README and [AI_CONTEXT.md](AI_CONTEXT.md)); build times are bounded by
+README and [CONTRIBUTING.md](CONTRIBUTING.md)); build times are bounded by
 GitHub's macOS runner performance (~60–150 min for this build).
 
 ---
@@ -87,7 +87,7 @@ single reusable workflow).
 **Impact**: Adding a third or later SDK means adding one `case` arm to the
 "Resolve SDK-specific configuration" step — provided that SDK is first
 verified (not assumed) to share the toolchain, per
-[AI_CONTEXT.md](AI_CONTEXT.md#how-another-ai-agent-should-approach-future-modifications).
+[CONTRIBUTING.md](CONTRIBUTING.md#how-another-ai-agent-should-approach-future-modifications).
 If a future SDK's toolchain genuinely differs, the config-resolution step
 is exactly where that per-SDK branching belongs.
 
@@ -222,7 +222,7 @@ one missing piece).
 
 **Impact**: `patches/sdk56/` exists as a precedent for handling future
 similar per-SDK upstream gaps — see
-[AI_CONTEXT.md](AI_CONTEXT.md#what-not-to-change-casually) for guidance on
+[CONTRIBUTING.md](CONTRIBUTING.md#what-not-to-change-casually) for guidance on
 extending this pattern. The patch step's existence-check makes it
 self-deprecating: once Expo fixes the incomplete backport upstream (adding
 `SceneGeometry.swift` to `sdk-56` themselves), this step will detect the
@@ -234,7 +234,6 @@ that produced the patch (source-only verification — see
 [SDK_56.md](SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)
 for exactly what was and wasn't confirmed); the next actual GitHub Actions
 run is the real test.
-
 
 ---
 
@@ -281,7 +280,6 @@ preserved. No release deletion or recreation was needed. The SDK 57 note
 explicitly identifies that its August 16 artifact predates the August 27
 Hermes fix. Notes for other SDKs do not claim a published IPA exists.
 
-
 ## 2026-11-01 — A hosted LiveContainer source with one choice per SDK
 
 **Decision**: Host `apps.json` directly from `main` at a stable raw GitHub
@@ -303,3 +301,80 @@ two existing inputs. Source generation does not change release assets.
 imports DeclaredAgeRange, unavailable in Xcode 16.4. Xcode 26.2 provides
 that framework; the runtime guard retains support for older iOS devices.
 The configuration was corrected and a fresh SDK 54 release run dispatched.
+That run compiled and uploaded the IPA successfully; its later release
+step failed with HTTP 403. The exact artifact was recovered and published.
+
+## 2026-11-01 — Preserve releases while sorting by SDK
+
+**Result**: Published SDKs now sort 58, 57, 56, 55, 54. SDK 54's recovered
+build uses an earlier builder commit and sorts below these curated entries.
+GitHub's Latest badge remains on the highest SDK.
+
+**Method**: GitHub derives a release's ordering date from its tag. Converted
+the four existing timestamped build tags from lightweight to annotated
+tags, with ascending current tagger timestamps for SDK 55 through 58. Each
+annotated tag peels to the exact original source commit. Original build
+and publication provenance remains in the release notes. These curation
+timestamps are not Expo's upstream SDK release dates.
+
+**Preserved**: Release IDs, asset IDs, IPA bytes, SHA-256 digests, download
+URLs, notes, and download counts. No existing release or IPA was deleted
+or recreated. Changing draft publication alone did not reorder these
+entries. Public release metadata and verified IPA backups were saved
+locally before changing tag annotations.
+
+## 2026-11-01 — Responsive download website in web/
+
+**Decision**: Use a static Astro page with one hydrated React interface,
+the real published SDK catalog, and the selected silver/glass artwork.
+Self-host fonts and optimize transparent artwork to WebP. Restrained
+perspective provides the requested 3D appearance without WebGL overhead;
+reduced motion keeps the image still. The actual generated design-system
+Button and its transitive MetalRing module are retained; unused registry
+components and the experimental mesh implementation were removed.
+
+**Hosting**: Vercel Hobby, project expo-go-ios-builder, root web/, free
+subdomain https://expo-go-builds.vercel.app. Production source is main.
+Canonical links, sitemap, robots, social image, and structured data describe
+community downloads with attribution to official Expo. Search indexing and
+physical device installation are separate from browser verification.
+
+## 2026-11-01 — Android downloads and SDK 52/53
+
+**Decision**: Expand the one workflow to prepare both platforms for SDKs
+52–58. iOS IPAs are compiled from the matching Expo branch. Android APKs
+are the original official Expo binaries, mirrored without rebuilding or
+re-signing. This preserves Expo's signature and directly installable APKs;
+it does not claim both platform artifacts came from this builder's source
+checkout or have identical app version numbers.
+
+**Verification**: Resolve stable client versions through Expo's public
+versions metadata. Verify the official APK's asset size, SHA-256,
+cryptographic signature, package, version, and minimum Android API before
+publishing it. Attach a machine-readable Android receipt and human-readable
+provenance to the same SDK release. Never publish placeholder links.
+
+**Older SDKs**: SDK 52/53 have legacy plist generators, Yarn lockfiles, and
+historical Expo Go app versions `2.32.x`/`2.33.x`. Their iOS configuration
+is inspected separately and requires native build evidence before being
+called successfully built. The SDK support document records that evidence.
+
+**Automation**: A scheduled check in the existing workflow detects changed
+stable Expo client versions and requests builds using that same workflow.
+Unsupported future SDKs need reviewed source/toolchain configuration;
+automatic discovery does not justify guessing their build settings.
+
+## 2026-11-01 — Release authorization after main advances
+
+**Failure**: SDK 54 run `41270904815` successfully produced the unsigned
+arm64 IPA, then GitHub rejected release creation with HTTP 403. The job
+already had `Contents: write`. Its old builder commit modified workflow
+files relative to current `main`, triggering GitHub's additional workflow
+authorization requirement for release targets.
+
+**Correction**: Create the release tag against current `main`, retaining
+the actual Expo commit and builder commit in release provenance. No source
+history is rewritten and no more powerful user token is required. The
+completed SDK 54 artifact was recovered without recompilation; its exact
+size and SHA-256 were verified before publishing. GitHub documents the
+permission rule in its [release API reference](https://docs.github.com/en/rest/releases/releases#create-a-release).

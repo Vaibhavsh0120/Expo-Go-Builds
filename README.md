@@ -1,132 +1,106 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="Expo Go iOS Builder — build the real Expo Go app from source, no Mac and no paid Apple Developer account required" width="100%">
+  <img src="docs/assets/banner.svg" alt="Expo Go Builds — iOS IPA and Android APK downloads for your SDK" width="100%">
 </p>
 
-<h1 align="center">Expo Go iOS Builder</h1>
-
+<h1 align="center">Expo Go Builds</h1>
+<p align="center">Your SDK. Your phone.<br/>Community-built iOS IPAs and original Expo-signed Android APKs.</p>
 <p align="center">
-  Compile the real, open-source <strong>Expo Go</strong> iOS app from Expo's own source on a free GitHub-hosted Mac,<br/>
-  then sideload it yourself with a free tool and a free Apple ID.
+  <a href="https://expo-go-builds.vercel.app"><strong>Choose your SDK on the website →</strong></a><br/>
+  <a href="https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases">GitHub Releases</a> ·
+  <a href="#livecontainer-source">LiveContainer source</a> ·
+  <a href="#github-actions">Build with Actions</a>
 </p>
 
-<p align="center">
-  <img alt="Cost: free" src="https://img.shields.io/badge/cost-free-39D98A">
-  <img alt="Apple Developer Account: not required" src="https://img.shields.io/badge/apple%20dev%20account-not%20required-22D3EE">
-  <img alt="Builds on: GitHub Actions" src="https://img.shields.io/badge/builds%20on-GitHub%20Actions-2088FF">
-  <img alt="Signed with: Sideloadly" src="https://img.shields.io/badge/signed%20with-Sideloadly-F5B84E">
-  <img alt="Platform: iOS" src="https://img.shields.io/badge/platform-iOS-8C97B4">
-</p>
+## Download and install
 
----
+**Start with [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases)** or the [download website](https://expo-go-builds.vercel.app).
+Choose the SDK your Expo project uses, then download its file under **Assets**.
 
-## Install from LiveContainer
+| Your device | Download | Install |
+|---|---|---|
+| **Android** | `ExpoGo-SDKN.apk` | Open the APK and allow installation from your browser or file manager. |
+| **iPhone / iPad** | `ExpoGo-SDKN-unsigned.ipa` | Import with LiveContainer or [sign locally](docs/IPA_SIGNING.md) using a compatible tool. |
 
-Add this source in **LiveContainer → Sources → +**, then choose **Expo Go
-SDK 54, 55, 56, 57, or 58** from the published versions shown:
+Android APKs retain Expo’s original signature and are mirrored without modification.
+iOS IPAs are compiled from Expo’s open source code on a GitHub-hosted Mac.
+The IPA needs signing; tapping it alone does not install it.
+
+```mermaid
+flowchart LR
+    A[Choose your Expo SDK] --> B[GitHub Releases]
+    B --> C[Android APK]
+    B --> D[iOS IPA]
+    C --> E[Open and install]
+    D --> F[Sign or import with LiveContainer]
+    F --> G[iPhone or iPad]
+```
+
+## LiveContainer source
+
+Add this one URL in **LiveContainer → Sources → +**, then select the SDK you need:
 
 ```text
 https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json
 ```
 
-**[Open source JSON](https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json)**
-· [LiveContainer guide](docs/LIVECONTAINER.md)
-
-Each SDK has its own entry, so you can select the version your project
-needs. The source refreshes when a new IPA is published. Only published
-IPAs appear; use the download option below if you prefer another installer.
-
-## Download an IPA
-
-**Start with [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases).**
-Choose the Expo SDK your project uses, open that release, and download
-`ExpoGo-SDK<version>-unsigned.ipa` from **Assets**.
-
-1. **Download** the matching `.ipa` from Releases.
-2. **Sign** it locally with [Sideloadly](https://sideloadly.io/), SideStore,
-   or another compatible tool.
-3. **Install** it on your iPhone or iPad.
-
-The IPA is unsigned and needs signing before installation.
-[Signing walkthrough →](docs/IPA_SIGNING.md)
-
-```mermaid
-flowchart LR
-    A[GitHub Releases] --> B[Choose your Expo SDK]
-    B --> C[Download the IPA]
-    C --> D[Sign locally]
-    D --> E[iPhone or iPad]
-```
+Each published SDK is a separate entry. A newer SDK keeps the older choices available;
+each entry updates within its own SDK. Only verified published IPAs appear.
+All builds share Expo Go’s bundle identifier; use LiveContainer’s duplicate controls
+when keeping multiple copies. [Source and installation guide →](docs/LIVECONTAINER.md)
 
 ## Supported SDKs
 
-| Expo SDK | Build support | SDK information |
+| Expo SDK | Support | SDK information |
 |:--:|:--:|---|
-| **58** | ✅ | React Native 0.88 · iOS 16.4+ · [Release notes](releases/sdk-58.md) |
-| **57** | ✅ | React Native 0.86 · iOS 16.4+ · Default build selection · [Release notes](releases/sdk-57.md) |
-| **56** | ✅ | React Native 0.85 · iOS 16.4+ · Includes the conditional SceneGeometry fix · [Release notes](releases/sdk-56.md) |
-| **55** | ✅ | React Native 0.83 · iOS 15.1+ · [Release notes](releases/sdk-55.md) |
-| **54** | ✅ | React Native 0.81 · iOS 15.1+ · [Release notes](releases/sdk-54.md) |
+| **58** | ✅ | React Native 0.88 · iOS 16.4+ · [Notes](releases/sdk-58.md) |
+| **57** | ✅ | React Native 0.86 · iOS 16.4+ · [Notes](releases/sdk-57.md) |
+| **56** | ✅ | React Native 0.85 · iOS 16.4+ · [Notes](releases/sdk-56.md) |
+| **55** | ✅ | React Native 0.83 · iOS 15.1+ · [Notes](releases/sdk-55.md) |
+| **54** | ✅ | React Native 0.81 · iOS 15.1+ · [Notes](releases/sdk-54.md) |
+| **53** | ✅ | React Native 0.79 · iOS 15.1+ · [Notes](releases/sdk-53.md) |
+| **52** | ✅ | React Native 0.76 · iOS 15.1+ · [Notes](releases/sdk-52.md) |
 
-The ticks indicate builder support. Download availability depends on which
-IPAs have been published. [SDK release dates](releases/README.md) ·
-[Build and device verification](docs/SDK_SUPPORT.md#build-and-device-evidence)
+Android requires Android 7.0+ for the currently verified APKs. Ticks indicate configured
+support; [actual build and device evidence](docs/SDK_SUPPORT.md#build-and-device-evidence)
+is recorded separately. The website enables downloads only after files are published.
 
-## Build your own with GitHub Actions
+## GitHub Actions
 
-If the IPA you need is not in Releases, or you want a fresh upstream build:
+Most people can use **Releases**. To prepare a fresh pair:
 
-1. Open [**Actions → Build Expo Go**](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/workflows/build-expo-go.yml).
-2. Click **Run workflow** and keep **Use workflow from** set to `main`.
-3. Choose SDK **54, 55, 56, 57, or 58**.
-4. Tick **Also publish this build as a GitHub Release** to make the IPA
-   available on the Releases page too.
-5. Click **Run workflow** and wait for it to finish.
+1. Open [**Actions → Build Expo Go**](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/workflows/build-expo-go.yml) and click **Run workflow** on `main`.
+2. Choose SDK **52–58**.
+3. Optionally tick **Also publish this build as a GitHub Release**, then run it.
 
-Those are the only two build inputs. Source, runner, Xcode, and dependency
-tools are selected automatically. There is **one workflow** for every SDK.
+Those are the only two inputs. Source, Xcode, runner, and dependency settings are automatic.
+Successful platform jobs upload artifacts for 30 days. Release publishing waits for both
+platforms and includes SDK notes, source commits, sizes, checksums, and APK verification.
 
-Every successful build uploads an Actions artifact, retained for 30 days.
-Unzip that artifact once to get the `.ipa`. With the release checkbox
-selected, the IPA is also attached directly to a new GitHub Release with
-SDK-specific notes and build details. Existing releases are preserved.
-Earlier builds took roughly 60–150 minutes; cold caches and new SDKs can
-vary. [Full Actions guide →](docs/GITHUB_ACTIONS.md)
+The **same single workflow** checks official stable Expo Go versions every six hours.
+A new or changed supported SDK release starts an IPA build and prepares its official APK.
+Unchanged versions do not trigger another native build. Future SDKs need reviewed native
+toolchain settings before automatic builds can support them.
+[Actions guide →](docs/GITHUB_ACTIONS.md)
 
-## How the builder works
+```mermaid
+flowchart LR
+    A[Manual SDK choice or release watch] --> B[Pin upstream metadata]
+    B --> C[Compile unsigned IPA on macOS]
+    B --> D[Verify original Expo-signed APK]
+    C --> E[Artifacts and optional GitHub Release]
+    D --> E
+    E --> F[Refresh SDK download catalogs]
+```
 
-The workflow compiles the real, open-source Expo Go app from `expo/expo`
-on a GitHub-hosted Mac. It produces an unsigned physical-device IPA;
-signing happens locally with your own Apple ID. No Mac or paid Apple
-Developer Program membership is needed to compile it this way.
+## Useful links
 
-<p align="center">
-  <img src="docs/assets/architecture-diagram.svg" alt="Build pipeline: GitHub Actions checks out Expo source, compiles and packages an unsigned IPA, then the user downloads, signs, and installs it" width="100%">
-</p>
+[SDK release notes](releases/README.md) · [Signing](docs/IPA_SIGNING.md) ·
+[Troubleshooting](docs/TROUBLESHOOTING.md) · [Build settings](docs/SDK_SUPPORT.md) ·
+[Contributing](docs/CONTRIBUTING.md) · [Website development](web/README.md)
 
-[Build architecture →](docs/BUILD_ARCHITECTURE.md)
+Match the SDK to your project. Custom native modules may require an
+[Expo development build](https://docs.expo.dev/develop/development-builds/introduction/).
+Free Apple ID signing has Apple-imposed limits; keep your credentials on your own machine.
 
-## Before installing
-
-- Match the Expo Go SDK to your project's Expo SDK.
-- Free Apple ID signing has Apple-imposed limits, including a seven-day
-  validity period. See the [signing guide](docs/IPA_SIGNING.md).
-- Native modules outside Expo Go's module set require a development build.
-- Keep Apple credentials on your own machine. This workflow never asks
-  for them.
-
-## Documentation
-
-| Guide | What it covers |
-|---|---|
-| [Release notes](releases/README.md) | Each SDK's features, compatibility, and original release date |
-| [LiveContainer](docs/LIVECONTAINER.md) | Add the source, select an SDK, and understand installation behavior |
-| [GitHub Actions](docs/GITHUB_ACTIONS.md) | Build inputs, artifacts, logs, and reruns |
-| [Signing](docs/IPA_SIGNING.md) | Sign and install the IPA locally |
-| [Troubleshooting](docs/TROUBLESHOOTING.md) | SDK mismatch, dependency, Xcode, and signing failures |
-| [SDK settings and evidence](docs/SDK_SUPPORT.md) | Automatic toolchains and actual verification status |
-| [Contributing / AI context](docs/AI_CONTEXT.md) | Constraints to read before editing the builder |
-| [Decisions](docs/DECISIONS.md) | Why the pipeline is structured this way |
-
-This is an independent community project, unaffiliated with Expo or Apple.
-Issues and pull requests are welcome. No license has been selected yet;
-ask before reusing this repository's own code.
+Independent community project, unaffiliated with Expo or Apple.
+[Official Expo Go →](https://expo.dev/go) · [Expo source →](https://github.com/expo/expo)

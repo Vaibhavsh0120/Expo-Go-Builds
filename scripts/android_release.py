@@ -41,8 +41,9 @@ def official_metadata(sdk, versions):
     entry = versions.get("sdkVersions", {}).get(f"{sdk}.0.0", {})
     android = entry.get("androidClientVersion", "")
     ios = entry.get("iosClientVersion", "")
+    expected_prefix = "2.32." if sdk == 52 else "2.33." if sdk == 53 else f"{sdk}."
     for version in (android, ios):
-        if not re.fullmatch(r"\d+\.\d+\.\d+", version) or (sdk >= 54 and int(version.split(".")[0]) != sdk):
+        if not re.fullmatch(r"\d+\.\d+\.\d+", version) or not version.startswith(expected_prefix):
             raise ValueError(f"SDK {sdk} is missing stable official client versions")
     expected_url = f"https://github.com/{OFFICIAL_REPO}/releases/download/Expo-Go-{android}/Expo-Go-{android}.apk"
     if entry.get("androidClientUrl") != expected_url:

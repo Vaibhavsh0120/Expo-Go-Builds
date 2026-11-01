@@ -1,0 +1,14 @@
+{
+  "library": "solar",
+  "prefix": "solar",
+  "source": "iconify",
+  "installedAt": "2026-11-01T04:10:17.386Z",
+  "icons": [
+    "arrow-right-bold-duotone",
+    "box-bold-duotone",
+    "copy-bold-duotone",
+    "download-bold-duotone",
+    "moon-bold-duotone",
+    "sun-bold-duotone"
+  ]
+}

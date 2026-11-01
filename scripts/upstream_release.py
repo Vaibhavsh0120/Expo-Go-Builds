@@ -29,6 +29,22 @@ def pending_sdks(versions, releases, active=()):
     return pending
 
 
+def unreviewed_releases(versions):
+    unknown = []
+    for key, entry in versions.get("sdkVersions", {}).items():
+        if not re.fullmatch(r"\d+\.0\.0", key):
+            continue
+        sdk = int(key.split(".")[0])
+        if sdk <= max(SUPPORTED_SDKS):
+            continue
+        # The API can contain SDK development entries before a stable client
+        # exists. Those are not release events and must not trigger builds.
+        if all(re.fullmatch(rf"{sdk}\.\d+\.\d+", entry.get(field, ""))
+               for field in ("iosClientVersion", "androidClientVersion")):
+            unknown.append(sdk)
+    return sorted(unknown)
+
+
 def all_releases(repo):
     result = []
     for page in range(1, 100):
@@ -70,8 +86,7 @@ def watch(repo):
         request_json(f"{base}/actions/workflows/build-expo-go.yml/dispatches",
                      {"ref": "main", "inputs": {"expo_sdk": str(sdk), "create_release": "true"}}, "POST", authenticated=True)
         print(f"Dispatched SDK {sdk}: iOS IPA + verified official signed APK")
-    unknown = sorted(int(key.split(".")[0]) for key in versions.get("sdkVersions", {})
-                     if re.fullmatch(r"\d+\.0\.0", key) and int(key.split(".")[0]) > max(SUPPORTED_SDKS))
+    unknown = unreviewed_releases(versions)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as stream:
             stream.write("## Upstream SDK release watch\n\n")

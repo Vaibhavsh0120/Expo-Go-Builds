@@ -48,6 +48,15 @@ class LiveContainerSourceTests(unittest.TestCase):
         self.assertEqual(list(selected), [58, 55])
         self.assertEqual(selected[55]["id"], 2)
 
+    def test_legacy_sdk_versions_keep_their_original_bundle_identity(self):
+        for sdk, version in [(52, '2.32.18'), (53, '2.33.17')]:
+            with tempfile.TemporaryDirectory() as temp:
+                path = Path(temp) / 'legacy.ipa'
+                self.make_ipa(path, version=version, sdk=sdk)
+                self.assertEqual(self.module.ipa_metadata(path, sdk)['version'], version)
+                with self.assertRaises(ValueError):
+                    self.module.ipa_metadata(path, 53 if sdk == 52 else 52)
+
     def test_failed_missing_and_foreign_assets_are_not_listed(self):
         missing = self.release(54, 1, assets=[])
         wrong = self.release(55, 2)

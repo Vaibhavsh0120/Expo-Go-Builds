@@ -5,7 +5,7 @@
 1. Open **LiveContainer → Sources**.
 2. Tap **+**, paste the URL below, and confirm.
 3. Expand **Expo Go SDKs**.
-4. Find **Expo Go SDK 54**, **55**, **56**, **57**, or **58**, matching the
+4. Find **Expo Go SDK 52**, **53**, **54**, **55**, **56**, **57**, or **58**, matching the
    SDK your project targets, and tap **Install**.
 
 ```text
@@ -50,7 +50,7 @@ reads the package's `Info.plist` for:
 The catalog contains the verified download URL, size, hash, and release
 date for each IPA. It is not tied to whichever SDK GitHub labels Latest.
 
-The single IPA workflow refreshes `main/apps.json` after successful release
+The single IPA/APK workflow refreshes `main/apps.json` after successful release
 publishing, using a commit through the Contents API. It retries a
 concurrent edit using a fresh release snapshot. Artifact-only builds do
 not refresh the source. No additional workflow or branch is required.
