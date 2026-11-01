@@ -85,6 +85,23 @@
       "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk54-20261101-043016",
       "date": "2026-11-01T09:39:58Z",
       "signatureVerified": true
+    },
+    {
+      "sdk": 53,
+      "version": "2.33.22",
+      "minSdkVersion": 24,
+      "packageName": "host.exp.exponent",
+      "size": 181211963,
+      "sha256": "a194ab6c85685d2b6fb9443dc760e903952cb429066445e4dc0682e468aa2c15",
+      "certificateSHA256": [
+        "9eb6b9631cecbbd864ef607826e0a30f673dc64cf8fb5753263ecaae4bc50fae"
+      ],
+      "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-2.33.22/Expo-Go-2.33.22.apk",
+      "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk53-20261101-094941/ExpoGo-SDK53.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk53-20261101-094941",
+      "date": "2026-11-01T09:49:48Z",
+      "signatureVerified": true
     }
   ]
 }
