@@ -36,32 +36,32 @@ tool, using your own free Apple ID.
 
 | Expo SDK | Build support in this repo | Notes |
 |:--:|---|---|
-| **57** | 🟢 Released | The default option in the workflow. Built, released, and confirmed working on a real device — see [docs/SDK_57.md](docs/SDK_57.md#known-working-state). |
-| **56** | 🟢 Released | Selectable in the workflow today. Toolchain verified identical to SDK 57; a confirmed upstream Expo compile issue has been patched and is pending one more CI run to reconfirm — see [docs/SDK_56.md](docs/SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched). |
-| **55** | 🚧 In development | Not yet in the workflow's dropdown. Support is being worked on — [open an issue](../../issues) if you need it sooner. |
-| **54** | 📲 Available in the App Store | Skip this repo entirely — install the official Expo Go directly from Apple: [Expo Go on the App Store](https://apps.apple.com/us/app/expo-go/id982107779). No build, no signing, no Mac needed. |
+| **58** | Available in the workflow | Source and configuration checked; native build and device testing pending. |
+| **57** | Built and released | Default selection. Previously built in CI; owner reported successful device use. |
+| **56** | Built and released | The patched build succeeded and its IPA was published. |
+| **55** | Available in the workflow | Uses Yarn and its own Xcode settings; native build and device testing pending. |
+| **54** | Available in the workflow | Uses Yarn and the older plist generator; native build and device testing pending. |
 
-**Deciding between 56 and 57?**
-
-- **Choose SDK 56** if your project hasn't been upgraded to SDK 57 yet, you
-  want to test against an app still targeting SDK 56, or you'd rather not
-  touch your project's Expo dependencies right now.
-- **Choose SDK 57** if your project already targets SDK 57, or you want the
-  version this repository's build has been most thoroughly proven against —
-  see [Known Working State](docs/SDK_57.md#known-working-state).
+Choose the SDK your Expo project targets. All five versions use the same
+workflow; the source branch, runner, Xcode, Node, dependency manager, and
+iOS target are selected automatically. See [SDK support and build evidence](docs/SDK_SUPPORT.md)
+for the settings and what has actually been tested.
 
 ## Quick Start
 
 1. Open this repo's [**Actions** tab](../../actions).
 2. Select **"Build Expo Go (unsigned IPA for Sideloadly)"** from the sidebar.
 3. Click **Run workflow**.
-4. Choose **SDK 56** or **SDK 57** from the `expo_sdk` dropdown.
-5. Wait for the build — roughly **60–150 minutes**. You can close the tab;
+4. Choose **SDK 54, 55, 56, 57, or 58** from the `expo_sdk` dropdown.
+5. Optionally tick **Also publish this build as a GitHub Release**. These
+   are the only two build inputs; everything else is automatic. GitHub
+   also shows its standard **Use workflow from** branch selector — use `main`.
+6. Wait for the build — roughly **60–150 minutes**. You can close the tab;
    the run keeps going.
-6. When it finishes, open the run and download the artifact from the
+7. When it finishes, open the run and download the artifact from the
    **Artifacts** section at the bottom.
-7. Unzip it once — you'll get a `.ipa` file. **Don't** unzip that part.
-8. Open [Sideloadly](https://sideloadly.io/), drag in the `.ipa`, sign in
+8. Unzip it once — you'll get a `.ipa` file. **Don't** unzip that part.
+9. Open [Sideloadly](https://sideloadly.io/), drag in the `.ipa`, sign in
    with your Apple ID, and install it over USB.
 
 > [!NOTE]
@@ -102,9 +102,9 @@ GitHub repository (this repo)
     ↓
 GitHub Actions macOS runner (free, unmetered on a public repo)
     ↓
-Checkout expo/expo source (sdk-56 or sdk-57, your choice)
+Checkout expo/expo source (sdk-54 through sdk-58, your choice)
     ↓
-Expo Go iOS workspace (pnpm install, pod install)
+Expo Go iOS workspace (Yarn or pnpm install, pod install)
     ↓
 xcodebuild — physical-device ARM64 build, unsigned
     ↓
@@ -123,13 +123,14 @@ Full diagram and explanation: [docs/BUILD_ARCHITECTURE.md](docs/BUILD_ARCHITECTU
 
 ## Releases
 
-An **SDK 57 for iOS** IPA has already been built and uploaded to this
-repository's [Releases page](../../releases) as a reference/prebuilt
-example — confirmed working via SideStore and LiveContainer. Running the
-workflow yourself always builds the *current* source, which may differ from
-that snapshot. See
-[docs/SDK_57.md](docs/SDK_57.md#how-the-release-relates-to-the-github-actions-build)
-for how the two relate.
+Previously built SDK 56 and 57 IPAs are available on this repository's
+[Releases page](../../releases). SDK 54, 55, and 58 are now selectable for
+source builds; their native compilation and on-device use have not yet
+been verified in this builder. Existing releases are preserved.
+
+Running the workflow builds the current upstream branch for your selected
+SDK. Each run records the exact upstream commit in its summary and, when
+publishing is enabled, the release notes.
 
 The workflow only publishes a Release if you explicitly turn on the
 `create_release` option when running it — a normal run just produces a
@@ -159,12 +160,16 @@ actual point of Expo Go for day-to-day development. Full detail:
 
 The entire build pipeline lives in one file:
 [`.github/workflows/build-expo-go.yml`](.github/workflows/build-expo-go.yml).
-It's a single `workflow_dispatch` workflow with an `expo_sdk` choice input —
-SDK-specific values (which branch to build, how outputs are named) are
-resolved once, near the top, in a step called **"Resolve SDK-specific
-configuration."** Everything else in the workflow is shared between both
-SDKs, because it was verified to be identical between them — see
-[docs/DECISIONS.md](docs/DECISIONS.md).
+It is the repository's **only workflow**. Its `workflow_dispatch` form has
+two inputs: the SDK dropdown (54–58, default 57) and an optional release
+checkbox. The old SDK-57-only workflow has been removed.
+
+A configuration job resolves SDK-specific values in one case statement;
+the build job then uses the selected macOS runner and tools. SDK 54/55
+use Yarn, SDK 56/57 use pnpm 10, and SDK 58 uses pnpm 12.2.1 with Node 24.
+The older SDK 54 plist generator is handled separately. See
+[docs/SDK_SUPPORT.md](docs/SDK_SUPPORT.md) for source references, build
+status, and local validation commands.
 
 > [!IMPORTANT]
 > If you're an AI coding agent picking this repo up, **start with
@@ -177,6 +182,7 @@ SDKs, because it was verified to be identical between them — see
 |---|---|
 | [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md) | Start here if you're modifying this repo |
 | [docs/BUILD_ARCHITECTURE.md](docs/BUILD_ARCHITECTURE.md) | Full pipeline diagram and explanation |
+| [docs/SDK_SUPPORT.md](docs/SDK_SUPPORT.md) | SDK 54–58 automatic settings, source verification, and build evidence |
 | [docs/SDK_56.md](docs/SDK_56.md) | Verified SDK 56 build configuration |
 | [docs/SDK_57.md](docs/SDK_57.md) | Verified SDK 57 build configuration + known working state |
 | [docs/GITHUB_ACTIONS.md](docs/GITHUB_ACTIONS.md) | How to run and interpret the workflow |
@@ -196,11 +202,12 @@ SDKs, because it was verified to be identical between them — see
   work in Expo Go, regardless of how it was built — this is a general Expo
   Go constraint (you'd need a custom dev client for those), not something
   specific to this pipeline.
-- **SDK 56 hit a real, confirmed issue on its first GitHub Actions run** —
-  a compile failure caused by an incomplete backport in Expo's own
-  `sdk-56` branch (not this repo's config). It's been patched — see
-  [docs/SDK_56.md](docs/SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)
-  — but that patch hasn't been re-run and confirmed successful yet.
+- **SDK 54, 55, and 58 need their first native build verification in this
+  builder.** Local configuration checks do not prove that an IPA compiles
+  or installs; see [docs/SDK_SUPPORT.md](docs/SDK_SUPPORT.md).
+- **SDK 56's SceneGeometry workaround remains conditional.** The patched
+  build was successfully released; the patch is skipped if upstream has
+  supplied the utility. See [docs/SDK_56.md](docs/SDK_56.md).
 
 > [!WARNING]
 > This project is an independent, community-built tool. It is not

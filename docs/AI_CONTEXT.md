@@ -1,146 +1,79 @@
-# AI_CONTEXT.md — read this first if you're an AI agent modifying this repo
+# AI context for this repository
 
-## What this repository does
+Read [DECISIONS.md](DECISIONS.md) for historical decisions and
+[SDK_SUPPORT.md](SDK_SUPPORT.md) for current settings and evidence.
 
-This repository is a single GitHub Actions workflow
-(`.github/workflows/build-expo-go.yml`) that builds the real, open-source
-**Expo Go** iOS app from `expo/expo` source, on a GitHub-hosted macOS
-runner, as an **unsigned physical-device (arm64) `.ipa`**. It does not
-vendor any Expo source itself — it checks out `expo/expo` fresh into a
-subdirectory (`expo-src`) at build time.
+## Purpose and current interface
 
-The output is meant to be signed afterward by the user, locally, with a
-tool like Sideloadly, using their own free Apple ID — see
-[IPA_SIGNING.md](IPA_SIGNING.md).
+Build the real `expo/expo` Expo Go iOS app as an **unsigned physical-device
+arm64 IPA** on GitHub-hosted macOS, then let the user sign it locally with
+Sideloadly or a similar tool. This repository does not vendor Expo source.
 
-## Why it exists
+There must be **one workflow file**:
+`.github/workflows/build-expo-go.yml`. Its dispatch form exposes only:
 
-Expo Go's own App Store build sometimes lags behind the newest SDK release,
-or isn't available in some regions. This repo lets someone build a current
-Expo Go from source, for free, on infrastructure they already have access
-to (a GitHub account), without needing a Mac or a paid Apple Developer
-Program membership.
+- `expo_sdk`: 58, 57, 56, 55, or 54; default 57.
+- `create_release`: an optional boolean, default false.
 
-## Supported SDK versions
+The owner requested automatic settings and work directly on `main` for
+this update. Do not restore source-ref/Xcode inputs or SDK-specific
+workflow files. The old `build-expo-go-sdk57.yml` is available in Git
+history only.
 
-- **SDK 57** — the original target of this repo. Has a confirmed working
-  build: successfully compiled in GitHub Actions, uploaded as a GitHub
-  Release ("SDK 57 for iOS"), and installed/run successfully via SideStore
-  and LiveContainer. See [SDK_57.md](SDK_57.md#known-working-state).
-- **SDK 56** — added alongside SDK 57 by verifying the actual `sdk-56`
-  branch of `expo/expo` (not by assuming it's SDK 57 with a string
-  swapped). See [SDK_56.md](SDK_56.md) for the full verified diff and
-  [SDK_56.md#verification-status](SDK_56.md#verification-status) for what
-  is and isn't yet confirmed end-to-end.
+## Configuration and execution
 
-## How the build pipeline works
+The `resolve-config` Linux job has one SDK case statement for the branch,
+runner, Xcode, Node, package manager, Ruby, iOS target, macro mode, and SDK
+metadata path. Its outputs select the macOS build job's runner and tools.
+Keep SDK-specific values there; downstream steps consume job outputs.
 
-One job, one macOS runner, roughly this shape (see
-[BUILD_ARCHITECTURE.md](BUILD_ARCHITECTURE.md) for the full diagram):
+SDK 54/55 use Yarn Classic; SDK 56/57 use pnpm 10; SDK 58 uses pnpm 12.2.1
+and Node 24. Every SDK uses Yarn Classic for its React Native submodule.
+SDK 54 needs the legacy expotools plist wrapper with Xcode environment
+variables, while 55–58 use the shell generator with CLI flags. SDK 54's
+metadata has a different path and schema; see [SDK_SUPPORT.md](SDK_SUPPORT.md).
 
-```
-resolve SDK config (branch, naming)
-  → select Xcode
-  → fix SSH→HTTPS for git submodules
-  → checkout expo/expo @ <branch> (recursive submodules, LFS)
-  → install native build tools (cmake, ninja)
-  → Node.js + pnpm install (monorepo root, unfiltered)
-  → install react-native-lab (Expo's RN fork) deps
-  → build the `expo` package (tsc)
-  → Ruby + CocoaPods install (bundle exec pod install)
-  → generate dynamic macros / plists
-  → xcodebuild (Release, -sdk iphoneos, CODE_SIGNING_ALLOWED=NO)
-  → find + verify the .app bundle (arch, plist, codesign state)
-  → package Payload/Expo Go.app → .ipa
-  → upload as a GitHub Actions artifact
-  → (optional, opt-in) publish as a GitHub Release
-```
+Build sequence: select Xcode → rewrite SSH URLs to HTTPS → checkout this
+builder and the selected Expo branch → verify embedded SDK and record SHA
+→ native tools → Node/dependency tools → full monorepo install → React
+Native submodule install → build `packages/expo` → locked Ruby gems →
+generate plists → pod install → workspace check → unsigned xcodebuild →
+app diagnostics → package and check ZIP → artifact → optional release.
 
-## Important files
+## Constraints
 
-- **`.github/workflows/build-expo-go.yml`** — the entire pipeline. Single
-  workflow, `workflow_dispatch`-triggered, with an `expo_sdk` choice input
-  (`"57"` default, or `"56"`). A `Resolve SDK-specific configuration` step
-  near the top is the *only* place SDK-specific values (branch, output
-  names) are decided — everything downstream reads from
-  `steps.config.outputs.*`.
-- **`docs/SDK_56.md`** / **`docs/SDK_57.md`** — the verified, per-SDK
-  configuration reference. If you're checking "does X differ between SDK
-  56 and 57," these two files (and the diff notes in SDK_56.md) are the
-  source of truth, not assumption.
-- **`docs/DECISIONS.md`** — why the workflow is structured the way it is.
-  Read this before restructuring anything.
-- **`README.md`** — user-facing quick start.
+- Never request, store, or use Apple credentials in CI. No Expo-internal
+  secrets are needed: generation uses the checked-in public templates.
+- Preserve unsigned physical-device flags, including `-sdk iphoneos`,
+  `-destination generic/platform=iOS`, `CODE_SIGNING_ALLOWED=NO`, and the
+  other signing overrides. Signing is a separate local step.
+- Preserve existing releases, including the original SDK 57 reference.
+  Release creation is opt-in and additive, with a fresh timestamp tag.
+  Never overwrite or delete an existing release or tag.
+- Keep all app/IPA diagnostics and validation: existence, ZIP structure,
+  arm64/device metadata, bundle ID/version, SDK, minimum iOS, signing state,
+  and size. Do not equate printed diagnostics with proven device use.
+- Keep the pre-checkout SSH-to-HTTPS rewrite for the public React Native
+  submodule and Git LFS support for Expo assets.
+- Keep the conditional `patches/sdk56/SceneGeometry.swift` workaround
+  unless source inspection proves upstream has fixed it. Never apply it
+  to another SDK or overwrite an upstream utility.
+- Verify any new toolchain against the selected branch's own source/CI
+  and GitHub's runner inventory. SDK 58 does not match SDK 57's Node/pnpm
+  requirements. SDK 54/55 do not use pnpm at all.
+- Keep compilation on public-repository GitHub-hosted runners so users do
+  not need a paid build provider. SDK 58 upstream's Blacksmith runner is
+  not a requirement for this repository.
 
-## Important constraints
+## Verification and evidence
 
-- **No Apple credentials, ever.** No Apple ID password, 2FA code,
-  certificate, or private key should ever be requested by, stored in, or
-  passed to this workflow or any GitHub Secret in this repo. Signing is
-  explicitly out of scope for CI — see [IPA_SIGNING.md](IPA_SIGNING.md).
-- **No Expo-internal secrets are required or used.** The build works from
-  the public, checked-in fallback config
-  (`template-files/keys.json`-equivalent path) — see
-  `secrets/README.md` in `expo/expo` itself if you're ever tempted to add
-  one.
-- **The repo should stay public.** GitHub's macOS runners are free and
-  unmetered only on public repos; on private repos macOS minutes burn at
-  10× the normal rate.
-- **The existing SDK 57 GitHub Release ("SDK 57 for iOS") must never be
-  deleted, replaced, or silently overwritten** by workflow changes. It's a
-  manually-uploaded, static reference artifact — see
-  [SDK_57.md](SDK_57.md#how-the-release-relates-to-the-github-actions-build).
-- **Release creation from the workflow is opt-in** (`create_release` input,
-  default `false`) and creates a *new*, uniquely-tagged release each time
-  — it never touches an existing tag/release.
+Run `python -m unittest discover -s tests -v` (dependencies in
+`tests/requirements.txt`) and `actionlint` on the workflow before pushing.
+There is no extra test workflow. Local tests exercise SDK dispatch,
+automatic settings, invalid input handling, and the two-input interface.
 
-## What NOT to change casually
-
-- **The toolchain versions** (Node 22.14.0, pnpm 10, Ruby 3.2.2, CocoaPods
-  1.16.2, Xcode 26.4.1, macos-26) — these are pinned because they're
-  verified to match what `expo/expo`'s own CI uses. If you're bumping one,
-  re-verify against the live `ios-unit-tests.yml` and `Gemfile.lock` on the
-  relevant branch first — don't guess.
-- **The `xcodebuild` flag set** in the "Build Expo Go" step — every flag
-  has a documented reason (see the inline comment block above that step).
-  Removing `CODE_SIGNING_ALLOWED=NO` or similar will break the "no Apple
-  Developer account needed" property this whole repo exists for.
-- **The SSH→HTTPS git config step** — without it, the `react-native-lab`
-  submodule checkout fails with `Permission denied (publickey)` on a
-  keyless runner. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
-- **The `Resolve SDK-specific configuration` step's case statement** — this
-  is the single source of truth for per-SDK values. Don't duplicate SDK
-  branching logic elsewhere in the workflow.
-- **`patches/<sdk>/`** — holds small, verbatim, provenance-documented
-  source patches for confirmed upstream gaps on a specific SDK branch
-  (see `patches/sdk56/SceneGeometry.swift` and
-  [DECISIONS.md](DECISIONS.md) for the precedent). Each patch's applying
-  step must check whether the target file already exists before copying,
-  so the patch self-deprecates once Expo fixes the real issue upstream —
-  don't add an unconditional copy. Remove a patch (file + its workflow
-  step + its docs mentions) once you've confirmed upstream has actually
-  fixed the underlying gap, rather than leaving dead patches accumulating.
-
-## How another AI agent should approach future modifications
-
-1. **Read [DECISIONS.md](DECISIONS.md) first** to understand why things are
-   structured the way they are.
-2. **Never assume a new SDK (58+) matches 56/57's toolchain.** Sparse-clone
-   the relevant branch and diff it against the nearest known-verified SDK,
-   the same way [SDK_56.md](SDK_56.md) was produced — see the method
-   described there (`git clone --filter=blob:none --no-checkout
-   --depth 1 --branch <branch>` + `sparse-checkout`).
-3. **Keep SDK-specific values in the `Resolve SDK-specific configuration`
-   step's case statement** — add a new `case` arm, don't scatter
-   conditionals through the rest of the workflow.
-4. **Preserve the validation step's 11 checks** (see
-   [SDK_57.md](SDK_57.md#validation-steps)) for any new SDK — they're
-   SDK-agnostic and are what makes the job fail loudly instead of silently
-   uploading a broken IPA.
-5. **Don't touch the existing GitHub Release.** If you add automatic
-   release publishing behavior, keep it opt-in and additive (unique tag
-   per run), never overwriting.
-6. **Update the relevant `docs/SDK_*.md` "Verification status" table**
-   whenever you actually run and confirm (or fail to confirm) a build —
-   keep the "verified from source" vs. "verified in CI" vs. "unverified"
-   distinction honest and current.
+SDK 56 and 57 have historical successful builds and published IPA assets.
+The owner previously reported device use for SDK 57. SDK 54/55/58 have
+source/configuration verification; native compilation and device use
+still need evidence. Keep these distinctions in the README and support
+table. A new workflow change or branch tip is not proven by an old green run.

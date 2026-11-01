@@ -9,6 +9,10 @@ Every value below was re-verified against the live `sdk-57` branch of
 `expo/expo` on **2026-08-16**, alongside the SDK 56 verification pass (see
 [SDK_56.md](SDK_56.md) for the full diff between the two).
 
+Current automatic settings and SDK 54–58 support are documented in
+[SDK_SUPPORT.md](SDK_SUPPORT.md). The details below preserve the original
+August source/build evidence.
+
 ## Source reference
 
 | Item | Value | How verified |
@@ -76,13 +80,14 @@ The **"SDK 57 for iOS"** GitHub Release is a **static, one-time snapshot**
 time, and uploaded manually. It is **not** automatically regenerated or
 kept in sync by this workflow. Running the unified `build-expo-go.yml`
 workflow again (with `expo_sdk: "57"`) will build the *current* tip of
-`sdk-57` (or whatever `expo_ref` you specify) and produce a **new** Actions
+`sdk-57` and produce a **new** Actions
 artifact — it will not touch, overwrite, or replace the existing Release.
 
-If you want a reproducible rebuild of exactly what's in that release, set
-the `expo_ref` input to the specific commit SHA that was built (see
-`docs/DECISIONS.md` and the original README for the recorded commit),
-rather than relying on the moving `sdk-57` branch tip.
+The dispatch form always selects the SDK's release branch automatically.
+There is no `expo_ref` input. Each build records its exact upstream SHA in
+the summary and optional release notes. A maintainer investigating a
+historical commit must change the configuration in source, rather than
+adding extra fields to the user form.
 
 ## Exact build commands
 

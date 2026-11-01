@@ -7,6 +7,16 @@ Every value below was checked directly against the live `sdk-56` branch of
 Nothing here is inferred from SDK 57 by pattern-matching — every row was
 independently read from the SDK 56 branch.
 
+## Build status update
+
+The patched SDK 56 build **succeeded** on August 16, 2026:
+[Actions run 31936279223](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31936279223)
+published [ExpoGo-SDK56-unsigned.ipa](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk56-20260816-090047).
+This corrects the earlier pending-build status below. Device installation
+has not been verified here. Current dispatch and automatic settings are in
+[SDK_SUPPORT.md](SDK_SUPPORT.md); the following source analysis is the
+original August comparison.
+
 ## Source reference
 
 | Item | Value | How verified |
@@ -164,16 +174,10 @@ via `ExpoModulesCore.podspec`) picks the new file up and compiles it as
 part of the `ExpoModulesCore` target, same as any other file in that
 directory.
 
-**What was *not* independently verified**: whether this exact file
-compiles cleanly in *this* pipeline's specific Xcode/Swift toolchain — it
-was verified by source comparison (self-contained, actively compiling on
-`main` right now) rather than by an actual local compile, since no
-macOS/Xcode is available in the environment that produced this patch. If
-it turns out not to compile for some other reason, the fallback is to
-pin `expo_ref` to `c87637c7ae07b8e38786015c481250aa5f03da4b` (the last
-`sdk-56` commit before the broken backport), which sidesteps the issue
-entirely by not including the offending code at all — see
-[TROUBLESHOOTING.md](TROUBLESHOOTING.md#scenegeometry-cannot-find-in-scope-sdk-56).
+**Compilation outcome**: the subsequent patched CI run linked and packaged
+the app successfully and published its IPA (see the build status update
+above). This verifies the workaround in that run's toolchain. It does not
+prove every future upstream branch tip or a real-device installation.
 
 **Worth doing**: this looks like a genuine bug worth reporting at
 [github.com/expo/expo/issues](https://github.com/expo/expo/issues) —
@@ -185,8 +189,8 @@ failure until Expo backports the missing file themselves.
 - Same free-Apple-ID entitlement limitations as SDK 57 apply (push,
   Sign In with Apple, Associated Domains, iCloud) — see
   [IPA_SIGNING.md](IPA_SIGNING.md).
-- See the confirmed upstream issue above — patched, but not compile-
-  verified independently of Expo's own `main` branch CI.
+- The historical upstream issue above was patched and compiled in this
+  builder's CI; future branch changes still require fresh build evidence.
 
 ## Verification status
 
@@ -199,5 +203,5 @@ Be precise about what's actually been confirmed:
 | `.gitmodules`/Brewfile/README build recipe identical to SDK 57 | ✅ Verified from source (`diff`) |
 | Min iOS deployment target (16.4) | ✅ Verified from source (`Podfile` + `project.pbxproj`) |
 | Checkout, native tools, pnpm install, react-native-lab setup, `expo` package build, Ruby/CocoaPods install steps | ✅ **Verified in CI** — a real GitHub Actions run completed all of these steps successfully before failing at `xcodebuild` (see the `SceneGeometry` issue above) |
-| `xcodebuild` (actual compilation) | ⬜ **Blocked on the confirmed `SceneGeometry` issue above** as of the last run; a patch has been applied but not yet re-run |
-| Resulting IPA installs on a real device | ⬜ **Unverified until a full run succeeds and you test with Sideloadly/SideStore/LiveContainer** |
+| `xcodebuild` and published IPA | ✅ **Verified in CI** — patched run `31936279223` succeeded and release `expo-go-sdk56-20260816-090047` contains the IPA |
+| Resulting IPA installs on a real device | ⬜ **Unverified on a real device here; the full build and published IPA are confirmed** |

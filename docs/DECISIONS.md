@@ -234,3 +234,31 @@ that produced the patch (source-only verification — see
 [SDK_56.md](SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)
 for exactly what was and wasn't confirmed); the next actual GitHub Actions
 run is the real test.
+
+
+---
+
+## 2026-11-01 — One automatic workflow for SDK 54–58
+
+**Decision**: Keep only `build-expo-go.yml`. Expose the SDK selector and
+optional release checkbox; remove `expo_ref`, `xcode_version`, and the
+obsolete SDK-57-only workflow. Work for this update is committed to `main`
+at the owner's request.
+
+**Reason**: The owner wants to choose a supported SDK and optionally
+publish an IPA without managing native build settings. SDK 54/55 use Yarn
+and older toolchains; SDK 58 uses Node 24 and pnpm 12.2.1. Direct source
+inspection showed these cannot all reuse SDK 57's configuration.
+
+**Impact**: A small Linux configuration job resolves one SDK case before
+the macOS job starts, including its runner. SDK 54's older plist wrapper
+receives Xcode environment variables. Defaults for SDK 56/57 and the
+conditional SDK 56 patch remain. Existing releases are preserved, and
+new releases are still opt-in. Exact upstream commits and actual Xcode
+versions are recorded. The preferred Xcode falls back automatically to
+the image default if retired; future compatibility needs build evidence.
+
+**Evidence**: [SDK_SUPPORT.md](SDK_SUPPORT.md) records inspected commits
+and distinguishes local/source checks from historical native builds and
+device testing. The earlier SDK 56 pending-build status was corrected
+against the successful August run and published IPA.

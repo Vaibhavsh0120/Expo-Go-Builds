@@ -33,7 +33,7 @@
     <rect x="740.0" y="108" width="200" height="4" rx="2" fill="#22D3EE"/>
     <text x="756.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#22D3EE">04</text>
     <text x="756.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Checkout expo/expo</text>
-    <text x="756.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">sdk-56 or sdk-57 branch</text>
+    <text x="756.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">sdk-54 through sdk-58</text>
   </g>
 
   <g>
@@ -41,7 +41,7 @@
     <rect x="980.0" y="108" width="200" height="4" rx="2" fill="#22D3EE"/>
     <text x="996.0" y="136" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="11" letter-spacing="1" fill="#22D3EE">05</text>
     <text x="996.0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="16" fill="#F3F6FB">Expo Go workspace</text>
-    <text x="996.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">pnpm install, pod install</text>
+    <text x="996.0" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#8C97B4">Yarn or pnpm, pod install</text>
   </g>
 
   <g>

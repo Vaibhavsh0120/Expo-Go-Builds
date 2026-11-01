@@ -6,7 +6,8 @@
 a compatibility warning, in an Expo Go built for a different SDK.
 
 **Cause**: Expo Go embeds a specific `sdkVersion` (see
-`apps/expo-go/sdkVersions.json` — `56.0.0` or `57.0.0`) and checks it
+`apps/expo-go/sdkVersions.json` for SDK 55–58; SDK 54 uses
+`apps/expo-go/ios/Exponent/Supporting/sdkVersions.json`) and checks it
 against your project's manifest at load time. This is intentional — Expo
 Go's native module set is version-locked to the SDK it was built for.
 
@@ -41,16 +42,14 @@ re-download) the artifact matching your project's actual SDK.
 **Symptom**: `pnpm install` fails with an "unsupported engine" error, or a
 lockfile-version error.
 
-**Cause**: `expo/expo` may have bumped its pinned Node/pnpm version on the
-branch tip since this was last verified (2026-08-16 for both `sdk-56` and
-`sdk-57` — see [SDK_56.md](SDK_56.md) / [SDK_57.md](SDK_57.md)).
+**Cause**: The upstream branch may have changed its Node or dependency
+manager requirements since the source checks in [SDK_SUPPORT.md](SDK_SUPPORT.md).
+SDK 54/55 use Yarn; SDK 56/57 use pnpm 10; SDK 58 uses pnpm 12.2.1.
 
-**Fix**: Open the relevant branch's root `package.json` →
-`"volta": {"node": ...}` and its `.github/workflows/ios-unit-tests.yml` →
-the `pnpm/action-setup` version, on the *live* `expo/expo` repo. Update the
-`node_version` / `pnpm_version` values in the workflow's **"Resolve
-SDK-specific configuration"** step to match (see
-[AI_CONTEXT.md](AI_CONTEXT.md#what-not-to-change-casually)).
+**Fix**: A maintainer should inspect the live branch's `package.json`
+(`volta`, `engines`, and `devEngines`) and CI, then update that SDK's case
+in the workflow's configuration job. Users only select the SDK; there
+are no manual Node, source-ref, or Xcode fields.
 
 ## pnpm failure
 
@@ -69,9 +68,9 @@ build it automatically; that list only affects which packages are
 
 **Symptom**: The **"pod install"** step fails.
 
-**Fix**: Check the `failure-logs-sdk<56|57>` artifact's `pod-install.log`.
+**Fix**: Check the `failure-logs-sdk<N>` artifact's `pod-install.log`.
 Common causes: a transient CocoaPods trunk/CDN fetch failure (re-run the
-job), or the **"Build the `expo` package (tsc)"** step not having run
+job), or the **"Build the expo package"** step not having run
 first (it must run before `pod install`, since `Podfile` invokes
 `expo/bin/autolinking`, which needs that build output — this ordering is
 correct in the shipped workflow).
@@ -81,14 +80,14 @@ correct in the shipped workflow).
 **Symptom**: The **"Select Xcode"** step logs
 `::warning::...was not found on this runner image.`
 
-**Cause**: GitHub rotates the available Xcode versions on the `macos-26`
-image every few weeks (oldest build retired shortly after a new one
-ships). The workflow pins `26.4.1` because that's what `expo/expo`'s own
-CI used for both SDK 56 and SDK 57 as of 2026-08-16.
+**Cause**: GitHub can remove a preferred Xcode from its runner images.
+The preferred version depends on the selected SDK; see
+[SDK_SUPPORT.md](SDK_SUPPORT.md).
 
-**Fix**: Open the step's log for the `Available versions:` list it prints,
-and re-run the workflow with `xcode_version` set to one of those. Any
-Xcode 26.x with an iOS 26 SDK should behave the same.
+**Fix**: The workflow automatically falls back to the runner's default
+Xcode and records the actual version. If compilation fails with that
+replacement, a maintainer must verify a compatible available toolchain
+and update the SDK configuration. There is no Xcode input to fill in.
 
 ## Missing plist
 
@@ -215,14 +214,10 @@ one of two things is true:
 
 1. You're on an older run from before the patch was added — re-run the
    workflow with the current workflow file.
-2. The patch itself didn't resolve it (unexpected — see
-   [SDK_56.md](SDK_56.md#known-upstream-issue-scenegeometry-confirmed-patched)
-   for what wasn't independently verified about it). In that case, use the
-   fallback: set the `expo_ref` input to
-   `c87637c7ae07b8e38786015c481250aa5f03da4b` (the last `sdk-56` commit
-   before the broken backport landed) and re-run — this sidesteps the
-   issue by not including the offending code at all, at the cost of
-   missing any `sdk-56` commits after that point.
+2. The selected upstream source has a new failure. The patched SDK 56
+   build succeeded in run `31936279223`; compare the current source with
+   that run and inspect its logs. There is no source-ref override input.
+   A historical checkout for diagnosis requires a maintainer source change.
 
 If neither works, check whether Expo has since fixed the incomplete
 backport upstream (search `packages/expo-modules-core/ios/Utilities/` on

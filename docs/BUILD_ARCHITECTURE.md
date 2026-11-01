@@ -15,16 +15,18 @@ Windows developer machine
 GitHub repository (this repo)
     │  git push, or just click "Run workflow" in the Actions UI
     ▼
-GitHub Actions macOS runner (macos-26 image)
+Resolve SDK configuration (Linux job, automatic)
+    ▼
+GitHub Actions macOS runner (macos-15 or macos-26)
     │  free + unmetered on a PUBLIC repo
     ▼
 Checkout expo/expo source (a DIFFERENT repo, fetched fresh each run)
-    │  branch selected by the expo_sdk input: sdk-56 or sdk-57
+    │  branch selected by the expo_sdk input: sdk-54 through sdk-58
     ▼
 Expo Go iOS workspace (apps/expo-go/ios/Exponent.xcworkspace)
-    │  pnpm install, react-native-lab setup, pod install
+    │  Yarn or pnpm install, react-native-lab setup, pod install
     ▼
-Xcode (Xcode_26.4.1.app, selected explicitly)
+Xcode (preferred version selected automatically for the SDK)
     │  xcodebuild -sdk iphoneos -destination generic/platform=iOS
     │  CODE_SIGNING_ALLOWED=NO (no Apple Developer account needed)
     ▼
@@ -32,9 +34,9 @@ Physical-device ARM64 build (Expo Go.app)
     │  verified: lipo -info, otool, PlistBuddy, codesign -dvvv
     ▼
 Unsigned .ipa (Payload/Expo Go.app zipped)
-    │  ExpoGo-SDK57-unsigned.ipa  or  ExpoGo-SDK56-unsigned.ipa
+    │  ExpoGo-SDK<N>-unsigned.ipa (N = 54, 55, 56, 57, or 58)
     ▼
-GitHub Actions artifact (ExpoGo-SDK57-iOS / ExpoGo-SDK56-iOS)
+GitHub Actions artifact (ExpoGo-SDK<N>-iOS)
     │  downloaded by you, as a .zip wrapper around the .ipa
     │  (optionally, opt-in: also published as a GitHub Release)
     ▼
@@ -58,7 +60,7 @@ is no way to produce a real `iphoneos`-target binary without running the
 actual compiler on actual macOS.
 
 This is why the pipeline's one hard requirement is a macOS build host —
-and why this repo uses GitHub's hosted `macos-26` runners rather than
+and why this repo uses GitHub's hosted `macos-15` / `macos-26` runners rather than
 requiring you to own a Mac. GitHub-hosted macOS runners are real (virtualized)
 Apple hardware/OS, running the genuine Xcode toolchain, so the resulting
 binary is a real, correctly-linked iOS binary — not a cross-compiled or
@@ -73,16 +75,13 @@ is deliberately kept out of the macOS/CI part of this pipeline.
 
 ## Single workflow, SDK-parameterized
 
-Both SDK 56 and SDK 57 flow through the *exact same* pipeline shape above.
-The only points where SDK choice matters:
+SDKs 54–58 share one workflow and the same unsigned physical-device
+build/package sequence. The Linux configuration job resolves the selected
+SDK before the macOS build job starts, so runner and toolchain settings
+have one source of truth.
 
-1. **Checkout step** — which branch (`sdk-56` vs `sdk-57`) is fetched.
-2. **Output naming** — `ExpoGo-SDK56-*` vs `ExpoGo-SDK57-*` file/artifact
-   names, and the SDK number shown in logs and the job summary.
-
-Everything else — Node/pnpm/Ruby/CocoaPods/Xcode versions, the `xcodebuild`
-flags, the validation checks, the IPA packaging steps — is identical
-because it was verified to be identical between the two branches (see
-[SDK_56.md](SDK_56.md) for the full diff). See
-[DECISIONS.md](DECISIONS.md) for why this was implemented as one
-parameterized workflow rather than two separate ones.
+SDK 54/55 use Yarn Classic and macOS 15. SDK 56/57 use pnpm 10 on macOS 26.
+SDK 58 uses pnpm 12.2.1 with Node 24. SDK 54's older plist generator gets
+its required Xcode environment; later SDKs use the shell generator.
+See [SDK_SUPPORT.md](SDK_SUPPORT.md) for the complete configuration and
+source evidence.

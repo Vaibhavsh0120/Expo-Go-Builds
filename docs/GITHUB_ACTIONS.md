@@ -1,141 +1,92 @@
-# GITHUB_ACTIONS.md
+# Build an IPA with GitHub Actions
 
-## How to start a build
+## Start a build
 
-1. On GitHub, open your repo → **Actions** tab.
-2. First time only: GitHub may ask you to confirm workflows are enabled —
-   click **"I understand my workflows, go ahead and enable them"**.
-3. Click **"Build Expo Go (unsigned IPA for Sideloadly)"** in the left
-   sidebar.
-4. Click **"Run workflow"** (top right).
-5. Fill in the inputs (see below), then click **"Run workflow"** again to
-   start it.
-6. Wait. Expect roughly 60–150 minutes depending on cache state — Hermes is
-   built from source and the JS/native install steps dominate. You can
-   close the tab; the run keeps going.
-7. When the run finishes (green check), open it and scroll to **Artifacts**
-   at the bottom of the run summary page.
+1. Open this repository's **Actions** tab. Enable Actions if GitHub asks.
+2. Select **Build Expo Go (unsigned IPA for Sideloadly)**. This is the only
+   workflow; the previous SDK-57-only workflow was removed.
+3. Click **Run workflow** and keep GitHub's **Use workflow from** set to `main`.
+4. Select SDK **54, 55, 56, 57, or 58**. The default is **57**.
+5. Optionally tick **Also publish this build as a GitHub Release (in
+   addition to the always-uploaded Actions artifact)**.
+6. Click **Run workflow**. You can close the page while the build runs.
+7. After a successful run, open its summary and download the IPA artifact.
 
-## How to choose SDK 56/57
+These are the only two build inputs. There is no source-ref or Xcode field.
+The selected SDK determines its source branch, runner, Xcode, Node,
+package manager, Ruby, plist generation, and minimum iOS automatically.
+See [SDK_SUPPORT.md](SDK_SUPPORT.md) for the exact settings and build status.
+Pushing a commit does not start a build; the workflow is manual only.
 
-The **`expo_sdk`** input is a dropdown with two choices: `"57"` (default)
-and `"56"`. Everything else — which branch is checked out, how the output
-files and artifacts are named, what shows up in the job summary — follows
-automatically from this one choice. You don't need to touch any other
-input to switch SDKs.
+## The two inputs
 
-## What each input means
+| Input | Meaning | Default |
+|---|---|---|
+| `expo_sdk` | Match your project's SDK: 54, 55, 56, 57, or 58 | `57` |
+| `create_release` | Attach this run's IPA to a new GitHub Release as well as its Actions artifact | `false` |
 
-| Input | Meaning | Default | When to change it |
-|---|---|---|---|
-| `expo_sdk` | Which Expo Go SDK version to build: `"57"` or `"56"` | `"57"` | Pick the SDK your project actually uses — see the README's "Choose SDK 56 if…" / "Choose SDK 57 if…" sections |
-| `expo_ref` | Overrides the branch/tag/commit checked out in `expo/expo`, instead of the SDK's default branch (`sdk-57` or `sdk-56`) | *(blank — uses the SDK default)* | Set this to an exact commit SHA if you need a reproducible rebuild of a specific point in time, rather than "whatever's on the branch tip today" |
-| `xcode_version` | Which Xcode app bundle to `xcode-select --switch` to on the runner | `26.4.1` | Only if the pinned version stops existing on the `macos-26` image — see [Diagnosing Xcode failures](#how-to-diagnose-xcode-failures) below |
-| `create_release` | Also publish this build as a new, uniquely-tagged GitHub Release, in addition to the Actions artifact | `false` | Turn on if you specifically want this run's IPA to land in Releases (e.g. to share a link with someone) rather than just the Actions artifact |
+GitHub's standard branch selector is part of GitHub's interface, rather
+than a custom build input. Use `main` to run the current workflow.
 
-## Where artifacts appear
+## Output and releases
 
-Bottom of the run's summary page, under **Artifacts**:
+For SDK `N`, the artifact is **`ExpoGo-SDKN-iOS`**, containing
+**`ExpoGo-SDKN-unsigned.ipa`**. For example, SDK 54 produces
+`ExpoGo-SDK54-iOS` / `ExpoGo-SDK54-unsigned.ipa`, and SDK 58 produces
+`ExpoGo-SDK58-iOS` / `ExpoGo-SDK58-unsigned.ipa`.
 
-- **SDK 57 builds** → artifact named `ExpoGo-SDK57-iOS`, containing
-  `ExpoGo-SDK57-unsigned.ipa`.
-- **SDK 56 builds** → artifact named `ExpoGo-SDK56-iOS`, containing
-  `ExpoGo-SDK56-unsigned.ipa`.
+Artifacts download inside GitHub's `.zip` wrapper. Unzip that wrapper once;
+leave the resulting `.ipa` intact for Sideloadly. Artifacts are retained
+for 30 days. A successful build uploads an artifact whether or not you
+tick the release checkbox.
 
-Artifacts download as a `.zip` (GitHub's wrapper) — unzip once to get the
-actual `.ipa`. Don't unzip the `.ipa` itself; Sideloadly wants it as-is.
-Artifacts are retained for 30 days.
+When publishing is selected, the same IPA is attached to a new release
+tagged `expo-go-sdkN-<timestamp>`. Existing releases are preserved. The tag
+targets the builder commit that ran; release notes also identify the
+exact upstream Expo commit. An existing tag causes publishing to fail
+instead of being overwritten.
 
-If you enabled `create_release`, the same IPA is also attached to a new
-GitHub Release, tagged `expo-go-sdk<56|57>-<timestamp>`.
+All output is **unsigned** and must be signed locally before installation.
+See [IPA_SIGNING.md](IPA_SIGNING.md).
 
-## How to interpret logs
+## Read the logs
 
-The **"Resolve SDK-specific configuration"** step (first step in the job)
-prints a block like:
+The **Select SDK source and toolchain** job prints the resolved build
+settings, then the macOS build job starts on its selected runner. The
+**Record source commit and verify embedded SDK** step prints the upstream
+SHA and rejects a checkout whose SDK metadata does not match the selection.
 
-```
-==================================================
-Expo Go Build
-SDK:             56
-Source:          sdk-56
-Node:            22.14.0
-pnpm:            10
-Ruby:            3.2.2
-CocoaPods:       1.16.2
-Xcode:           26.4.1
-iOS SDK:         iphoneos
-Min iOS:         16.4
-Target:          iphoneos
-Configuration:   Release
-Signing:         Disabled
-IPA filename:    ExpoGo-SDK56-unsigned.ipa
-Artifact name:   ExpoGo-SDK56-iOS
-Create release:  false
-==================================================
-```
+The **Select Xcode** step prints installed Xcodes and the selected version.
+If GitHub removed the preferred app, the workflow warns and uses the
+image's default. The final summary reports the actual selected version.
+Future Xcode compatibility still requires a successful native build.
 
-This is the authoritative summary of exactly what this run will do — check
-it first if a run produced something you didn't expect.
+The validation and packaging steps print the binary architecture, Mach-O
+metadata, bundle ID, app and SDK versions, minimum iOS, signing state,
+ZIP checks, and IPA size. Inspect these when diagnosing an unexpected
+artifact. Local configuration tests cannot replace an actual native build.
 
-The **"Find and verify the .app bundle"** and **"Package IPA"** steps print
-numbered validation output (arch, bundle ID, signing state, etc.) — this is
-what actually gates whether the job can succeed, not just "did xcodebuild
-exit 0."
+## Rerun or diagnose a failure
 
-## How to rerun failed builds
+- For a transient failure, open the run and select **Re-run jobs** →
+  **Re-run failed jobs**. This reuses that run's commit and inputs. To use
+  an updated workflow, start a new run from `main` instead.
+- To change the SDK or release checkbox, use **Run workflow** again.
+- If CocoaPods or Xcode fails, download `failure-logs-sdkN` for the full
+  `pod-install.log` / `xcodebuild.log`, when those steps produced logs.
+  Failure logs are retained for seven days.
+- Source/toolchain changes require a maintainer update to the single
+  configuration case, rather than extra user inputs. Compare the live
+  upstream branch with [SDK_SUPPORT.md](SDK_SUPPORT.md) first.
 
-Click into the failed run → **"Re-run jobs"** (top right) → **"Re-run
-failed jobs"**. This reuses the same inputs (`expo_sdk`, `expo_ref`, etc.)
-as the original run. If you want to change an input, use **"Run workflow"**
-from the workflow's main page instead, which starts a fresh run.
+## Caches and build duration
 
-## How caching works
+The dependency cache uses the package manager's actual store path and is
+keyed by OS, architecture, SDK, package-manager version, and lockfile hash.
+CocoaPods caches are scoped by SDK, ref, and Podfile lockfile. Dependency
+installation and `pod install` still run after cache restoration.
 
-Two caches, both keyed per-SDK (so SDK 56 and SDK 57 runs never share or
-collide on cache entries):
-
-- **pnpm store** (`~/.pnpm-store`) — keyed on OS + SDK + ref +
-  `pnpm-lock.yaml` hash. Speeds up `pnpm install`.
-- **CocoaPods `Pods/`** — keyed on OS + SDK + ref + `Podfile.lock` hash.
-  Speeds up `pod install`'s resolve step (the actual `Pods/` directory and
-  generated Xcode project still get written either way).
-
-A cache miss just means a slower run, not a failure — both steps work fine
-cold.
-
-## How to diagnose Xcode failures
-
-Open the **"Select Xcode"** step's log. If you see:
-
-```
-::warning::...was not found on this runner image.
-```
-
-GitHub has rotated the available Xcode versions on the `macos-26` image
-(this happens every few weeks — GitHub retires old builds shortly after a
-new one ships). The warning prints the actually-available versions — copy
-one of those and re-run with `xcode_version` set to it. Stick to an Xcode
-26.x with an iOS 26 SDK if possible; that's what this pipeline was verified
-against for both SDK 56 and SDK 57 (see [SDK_56.md](SDK_56.md) /
-[SDK_57.md](SDK_57.md)).
-
-## How to diagnose CocoaPods failures
-
-Check the **`failure-logs-sdk<56|57>`** artifact (uploaded automatically
-on any job failure) for `pod-install.log`. Common causes:
-
-- A transient CocoaPods trunk/CDN hiccup — just re-run.
-- The **"Build the `expo` package (tsc)"** step didn't run before **"pod
-  install"** — `Podfile` invokes `expo/bin/autolinking`, which needs that
-  build output. This ordering is correct in the shipped workflow; only a
-  concern if you've reordered steps.
-
-## How to diagnose architecture failures
-
-The **"Find and verify the .app bundle"** step's `lipo -info` output is the
-first place to look. It should report `arm64` and nothing else. If it
-reports a simulator-flavored architecture or fails to find `arm64` at all,
-check the **"Build Expo Go"** step's `xcodebuild` invocation for `-sdk` and
-`-destination` — they must be `iphoneos` and `generic/platform=iOS`
-respectively. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#architecture-mismatch-simulator-build-instead-of-device).
+Earlier builds took roughly 60–150 minutes; new SDKs and cold caches can
+take a different amount of time. Each native job has a 180-minute limit.
+Rerunning the same SDK cancels an in-progress run for that SDK; different
+SDKs can run independently.
