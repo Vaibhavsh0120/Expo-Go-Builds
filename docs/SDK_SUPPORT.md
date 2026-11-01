@@ -92,10 +92,10 @@ That runner substitution needs its own native build verification.
 | SDK | Evidence |
 |---|---|
 | 54 | Source configuration and local dispatch checks verified; this builder's native compilation and device installation are not yet verified. |
-| 55 | Source configuration and local dispatch checks verified; this builder's native compilation and device installation are not yet verified. |
+| 55 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267544358) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk55-20261101-034221). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
 | 56 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31936279223) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk56-20260816-090047) from August 16. Device installation remains unverified here. |
 | 57 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31938038257) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk57-20260816-094039). Earlier device testing via SideStore/LiveContainer was reported by the owner; see [SDK_57.md](SDK_57.md). |
-| 58 | Source configuration and local dispatch checks verified; this builder's native compilation and device installation are not yet verified. |
+| 58 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267578626) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk58-20261101-034916). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
 
 The original August build logs were recovered on November 1, 2026:
 SDK 56 built Expo commit `21be29ff1a27822a243b1b7b8bd1bdc963b6dae9`, and

@@ -280,3 +280,26 @@ their tags, asset IDs, sizes, hashes, URLs, and publication dates were
 preserved. No release deletion or recreation was needed. The SDK 57 note
 explicitly identifies that its August 16 artifact predates the August 27
 Hermes fix. Notes for other SDKs do not claim a published IPA exists.
+
+
+## 2026-11-01 — A hosted LiveContainer source with one choice per SDK
+
+**Decision**: Host `apps.json` directly from `main` at a stable raw GitHub
+URL and list the latest published IPA for each SDK as a separate entry.
+LiveContainer's source browser installs the first version of an app entry;
+one entry with five historical versions would hide the SDK choice.
+
+**Integrity**: Download each selected release IPA, match size and SHA-256
+against GitHub metadata, then read the actual Info.plist. Preserve the
+real shared bundle identifier. Never list failed builds or placeholder
+URLs, or label physical import/launch as verified from catalog checks.
+
+**Automation**: The existing IPA workflow refreshes the source after
+release publishing through the Contents API on main, with conflict
+retries and a fresh release snapshot. This keeps one workflow and the
+two existing inputs. Source generation does not change release assets.
+
+**SDK 54 correction**: Its first build failed because the current branch
+imports DeclaredAgeRange, unavailable in Xcode 16.4. Xcode 26.2 provides
+that framework; the runtime guard retains support for older iOS devices.
+The configuration was corrected and a fresh SDK 54 release run dispatched.

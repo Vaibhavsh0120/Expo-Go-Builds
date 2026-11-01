@@ -19,6 +19,22 @@
 
 ---
 
+## Install from LiveContainer
+
+Add this source in **LiveContainer → Sources → +**, then choose **Expo Go
+SDK 54, 55, 56, 57, or 58** from the published versions shown:
+
+```text
+https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json
+```
+
+**[Open source JSON](https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json)**
+· [LiveContainer guide](docs/LIVECONTAINER.md)
+
+Each SDK has its own entry, so you can select the version your project
+needs. The source refreshes when a new IPA is published. Only published
+IPAs appear; use the download option below if you prefer another installer.
+
 ## Download an IPA
 
 **Start with [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases).**
@@ -103,6 +119,7 @@ Developer Program membership is needed to compile it this way.
 | Guide | What it covers |
 |---|---|
 | [Release notes](releases/README.md) | Each SDK's features, compatibility, and original release date |
+| [LiveContainer](docs/LIVECONTAINER.md) | Add the source, select an SDK, and understand installation behavior |
 | [GitHub Actions](docs/GITHUB_ACTIONS.md) | Build inputs, artifacts, logs, and reruns |
 | [Signing](docs/IPA_SIGNING.md) | Sign and install the IPA locally |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | SDK mismatch, dependency, Xcode, and signing failures |

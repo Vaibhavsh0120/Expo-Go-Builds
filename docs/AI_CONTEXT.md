@@ -83,8 +83,23 @@ Run `python -m unittest discover -s tests -v` (dependencies in
 There is no extra test workflow. Local tests exercise SDK dispatch,
 automatic settings, invalid input handling, and the two-input interface.
 
-SDK 56 and 57 have historical successful builds and published IPA assets.
-The owner previously reported device use for SDK 57. SDK 54/55/58 have
-source/configuration verification; native compilation and device use
-still need evidence. Keep these distinctions in the README and support
-table. A new workflow change or branch tip is not proven by an old green run.
+SDK 56/57 have historical successful builds; SDK 55/58 also completed
+and published IPAs on November 1. The owner previously reported device
+use for SDK 57. SDK 54 failed with Xcode 16.4's missing DeclaredAgeRange
+framework; its Xcode 26.2 retry needs completion evidence. A new workflow
+change or branch tip is not proven by an old green run.
+
+## LiveContainer source
+
+`apps.json` on `main` is the permanent hosted catalog. The README links it
+near the top. `scripts/livecontainer_source.py` downloads the newest
+published IPA per SDK, checks size/hash against GitHub, and reads actual
+plist versions, bundle ID, and minimum iOS. Keep SDK entries separate and
+sorted descending. All retain `host.exp.Exponent`; do not invent a unique
+bundle ID per SDK or claim strict AltStore-store compatibility.
+
+The one existing workflow refreshes the source through the Contents API
+after publishing. That creates a commit on `main` and retries conflicts
+from a fresh release snapshot. Do not add another workflow or branch.
+Check the actual hosted JSON, its URLs, and IPA receipts; physical
+LiveContainer import/launch remains separate evidence.

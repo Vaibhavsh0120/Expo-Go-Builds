@@ -56,6 +56,13 @@ badge from a newer SDK.
 All output is **unsigned** and must be signed locally before installation.
 See [IPA_SIGNING.md](IPA_SIGNING.md).
 
+Successful release publishing also refreshes the permanent
+[LiveContainer source](https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json).
+Each published SDK is a separate install choice, sorted by SDK number.
+The generator verifies the released IPAs and commits the catalog on
+`main`; there is no additional workflow. Artifact-only builds do not
+modify the catalog. See [LIVECONTAINER.md](LIVECONTAINER.md).
+
 ## Read the logs
 
 The **Select SDK source and toolchain** job prints the resolved build

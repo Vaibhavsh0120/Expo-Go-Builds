@@ -537,6 +537,16 @@ jobs:
             --latest="$LATEST" \
             --notes-file "$NOTES_FILE"
 
+      - name: Refresh LiveContainer SDK source
+        if: ${{ success() && inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/livecontainer_source.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --cache "$RUNNER_TEMP/livecontainer-source-ipas" \
+            --publish
+
       - name: Build summary
         if: success()
         run: |
@@ -550,5 +560,6 @@ jobs:
           echo "- Signing: none -- **unsigned physical-device IPA, requires signing before installation** (e.g. Sideloadly + your free Apple ID, see docs/IPA_SIGNING.md)" >> "$GITHUB_STEP_SUMMARY"
           echo "- IPA filename: \`${{ steps.package_ipa.outputs.IPA_FILENAME }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Artifact name: \`${{ needs.resolve-config.outputs.artifact_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- LiveContainer source: https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/apps.json (updated when publishing a release)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Download the \`${{ needs.resolve-config.outputs.artifact_name }}\` artifact from this run." >> "$GITHUB_STEP_SUMMARY"
