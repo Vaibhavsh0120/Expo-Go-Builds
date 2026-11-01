@@ -118,6 +118,18 @@ class SdkDispatchTests(unittest.TestCase):
         self.assertEqual(workflow["jobs"]["watch-upstream"]["if"], "github.event_name == 'schedule'")
         self.assertEqual(workflow["jobs"]["resolve-config"]["if"], "github.event_name != 'schedule'")
 
+    def test_old_hermes_uses_isolated_cmake3_before_pods_capture_tool_path(self):
+        steps = self.workflow["jobs"]["build-expo-go-ios"]["steps"]
+        native_index = next(i for i, step in enumerate(steps) if step["name"].startswith("Install native build tools"))
+        pods_index = next(i for i, step in enumerate(steps) if step["name"].startswith("pod install"))
+        self.assertLess(native_index, pods_index)
+        script = steps[native_index]["run"]
+        self.assertIn('if [ "$SDK" = "52" ] || [ "$SDK" = "53" ]', script)
+        self.assertIn('--only-binary=:all: cmake==3.31.10', script)
+        self.assertIn('cmake.CMAKE_BIN_DIR', script)
+        self.assertIn('echo "$CMAKE_BIN_DIR" >> "$GITHUB_PATH"', script)
+        self.assertIn('export PATH="$CMAKE_BIN_DIR:$PATH"', script)
+
     def test_every_shell_step_has_valid_bash_syntax(self):
         for job in self.workflow["jobs"].values():
             for step in job["steps"]:

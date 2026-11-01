@@ -275,8 +275,20 @@ jobs:
       - name: Install native build tools (cmake, ninja via Brewfile)
         working-directory: expo-src
         run: |
-          if [ -f Brewfile ]; then brew bundle; else brew install cmake ninja; fi
+          if [ -f Brewfile ]; then brew bundle; else brew install ninja; fi
+          # The older Hermes CMakeLists explicitly set CMP0026=OLD. CMake 4
+          # removed that policy mode. Keep the compatibility tool isolated and
+          # expose its real binary (not the Python shim) to env -i in Hermes.
+          SDK="${{ needs.resolve-config.outputs.sdk }}"
+          if [ "$SDK" = "52" ] || [ "$SDK" = "53" ]; then
+            python3 -m venv "$RUNNER_TEMP/hermes-cmake"
+            "$RUNNER_TEMP/hermes-cmake/bin/python" -m pip install --only-binary=:all: cmake==3.31.10
+            CMAKE_BIN_DIR=$("$RUNNER_TEMP/hermes-cmake/bin/python" -c 'import cmake; print(cmake.CMAKE_BIN_DIR)')
+            echo "$CMAKE_BIN_DIR" >> "$GITHUB_PATH"
+            export PATH="$CMAKE_BIN_DIR:$PATH"
+          fi
           command -v cmake
+          cmake --version
           command -v ninja
 
       - name: Set up Node.js ${{ needs.resolve-config.outputs.node_version }}
@@ -378,7 +390,7 @@ jobs:
           plutil -lint apps/expo-go/ios/Exponent/Supporting/EXBuildConstants.plist
           plutil -lint apps/expo-go/ios/Exponent/Supporting/GoogleService-Info.plist
 
-      - name: pod install (CocoaPods 1.16.2)
+      - name: pod install (SDK-locked CocoaPods)
         working-directory: expo-src/apps/expo-go/ios
         run: |
           bundle exec pod install --verbose 2>&1 | tee /tmp/pod-install.log | tail -150
