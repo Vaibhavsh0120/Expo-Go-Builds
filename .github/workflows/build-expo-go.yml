@@ -77,7 +77,9 @@ jobs:
           case "$SDK" in
             54)
               RUNNER="macos-15"
-              XCODE_VERSION="16.4"
+              # The release branch now imports DeclaredAgeRange (iOS 26).
+              # Its old Xcode 16.4 CI pin no longer compiles Expo Go.
+              XCODE_VERSION="26.2"
               PACKAGE_MANAGER="yarn"
               PACKAGE_MANAGER_VERSION="1.22.22"
               MIN_IOS="15.1"

@@ -39,7 +39,7 @@ class SdkDispatchTests(unittest.TestCase):
 
     def test_each_sdk_selects_its_verified_toolchain(self):
         expected = {
-            "54": ("macos-15", "16.4", "22.14.0", "yarn", "1.22.22", "15.1", "legacy"),
+            "54": ("macos-15", "26.2", "22.14.0", "yarn", "1.22.22", "15.1", "legacy"),
             "55": ("macos-15", "26.2", "22.14.0", "yarn", "1.22.22", "15.1", "shell"),
             "56": ("macos-26", "26.4.1", "22.14.0", "pnpm", "10", "16.4", "shell"),
             "57": ("macos-26", "26.4.1", "22.14.0", "pnpm", "10", "16.4", "shell"),

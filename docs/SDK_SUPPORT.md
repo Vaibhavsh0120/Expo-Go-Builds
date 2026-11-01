@@ -10,7 +10,7 @@ previously successful build and owner-reported device testing.
 
 | SDK | Expo branch | GitHub runner | Preferred Xcode | Node | Monorepo package manager | Minimum iOS |
 |---|---|---|---|---|---|---|
-| 54 | `sdk-54` | `macos-15` | `16.4` | `22.14.0` | Yarn Classic `1.22.22` | `15.1` |
+| 54 | `sdk-54` | `macos-15` | `26.2` | `22.14.0` | Yarn Classic `1.22.22` | `15.1` |
 | 55 | `sdk-55` | `macos-15` | `26.2` | `22.14.0` | Yarn Classic `1.22.22` | `15.1` |
 | 56 | `sdk-56` | `macos-26` | `26.4.1` | `22.14.0` | pnpm `10` | `16.4` |
 | 57 | `sdk-57` | `macos-26` | `26.4.1` | `22.14.0` | pnpm `10` | `16.4` |
@@ -38,6 +38,12 @@ replacement Xcode is not guaranteed; failed builds retain diagnostic logs.
 
 - **SDK 54 and 55 use Yarn**, with `yarn.lock`; they do not have the pnpm
   workspace configuration used by SDK 56–58.
+- **SDK 54 now needs Xcode 26 despite its older upstream CI pin.** Run
+  [41267553893](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267553893)
+  reached compilation but failed with `no such module 'DeclaredAgeRange'`
+  under Xcode 16.4. The branch's `expo-age-range` imports that iOS 26
+  framework unconditionally, while runtime calls are guarded for iOS 26.
+  The builder selects Xcode 26.2 on macOS 15, retaining minimum iOS 15.1.
 - **SDK 54 uses the older expotools plist generator.** The workflow passes
   its Xcode environment (`SRCROOT`, `CONFIGURATION=Release`, and
   `APP_OWNER=Expo`) and invokes its wrapper without modern command-line
