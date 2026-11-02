@@ -4,6 +4,28 @@ The website, published SDK 52–58 downloads, release automation, and search set
 were reviewed from source and against the public services. SEO was published in
 `42e5ddb`; security headers and release recovery were published in `82392b6`.
 
+## Visual follow-up
+
+The owner caught an omission in the earlier review: the SDK pages had no Expo
+hero artwork, although the homepage did. The earlier checks did not establish
+visual parity, and their completion wording was too broad.
+
+The homepage and all seven SDK pages now use the same theme-aware artwork
+component. SDK pages show it to the right on desktop and above the downloads
+on smaller screens. The built-page check now requires both artwork variants on
+every route; it was observed failing before the repair and passing afterward.
+
+Chrome checks covered all eight routes in both themes at 320, 390, 768, 1024,
+1440, and 1728px: 96 states. Every state had one visible, loaded theme-correct
+image, two download links, no horizontal overflow, and no artwork/control
+overlap. Desktop and mobile screenshots were captured for every route in both
+themes. All 23 disclosures and every installation-guide link were exercised;
+current-SDK navigation was checked on all seven SDK pages. An independent
+static review validated local destinations across 221 links and all 16 image
+references. Better Design's monthly service quota was exhausted during this
+follow-up; no additional service approval is claimed. Browser geometry and
+screenshots supplied the rendered evidence.
+
 ## Public availability
 
 - Production: <https://expo-go-builds.vercel.app/>. Vercel reports READY, with

@@ -3,6 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import SiteHead from '../../components/SiteHead.astro';
 import SiteHeader from '../../components/SiteHeader';
 import SdkLinks from '../../components/SdkLinks';
+import HeroArtwork from '../../components/HeroArtwork';
 import { DownloadLinearIcon as DownloadIcon, BoxLinearIcon as BoxIcon, ArrowRightUpLinearIcon as ExternalIcon } from '../../components/icons/linear';
 import { sdkPages, sdkGraph } from '../../lib/seo.mjs';
 import { REPOSITORY_URL, formatSize, liveContainerURL } from '../../lib/catalog.mjs';
@@ -34,8 +35,11 @@ const structuredData = sdkGraph(canonical, title, description, page);
     <SiteHeader/>
     <main id="main" class="sdk-page page-width">
       <nav class="sdk-breadcrumb" aria-label="Breadcrumb"><a href="/">Expo Go downloads</a><span aria-hidden="true">/</span><span aria-current="page">SDK {sdk}</span></nav>
+      <section class="sdk-hero" aria-labelledby="sdk-heading">
+        <HeroArtwork/>
+        <div class="sdk-hero-content">
       <header class="sdk-page-heading">
-        <h1>Download Expo Go SDK {sdk}</h1>
+        <h1 id="sdk-heading">Download Expo Go SDK {sdk}</h1>
         <p>For projects using <code>expo ~{sdk}.0.0</code>. Choose the file for your phone.</p>
       </header>
       <div class="sdk-page-downloads">
@@ -49,6 +53,8 @@ const structuredData = sdkGraph(canonical, title, description, page);
           <a href="/#installation-options"><ExternalIcon aria-hidden="true"/>Installation Guide</a>
         </div>
       </div>
+        </div>
+      </section>
       <div class="sdk-page-grid">
         <section class="build-details" aria-labelledby="package-heading">
           <h2 id="package-heading">Your download.</h2>

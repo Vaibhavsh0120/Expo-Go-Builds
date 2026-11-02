@@ -5,19 +5,13 @@ import { CopyBoldDuotoneIcon as CopyIcon, ArrowRightBoldDuotoneIcon as ArrowIcon
 import { LayersLinearIcon as LayersIcon, BoxLinearIcon as BoxIcon, DownloadLinearIcon as DownloadIcon, SmartphoneLinearIcon as PhoneIcon, ArrowRightUpLinearIcon as ExternalIcon, AltArrowDownLinearIcon as ChevronIcon } from '@/components/icons/linear';
 import SiteHeader from './SiteHeader';
 import SdkLinks from './SdkLinks';
+import HeroArtwork from './HeroArtwork';
 import { SOURCE_URL, ANDROID_URL, REPOSITORY_URL, SDK_CHOICES, readCatalog, readAndroidCatalog, liveContainerURL, formatSize } from '@/lib/catalog.mjs';
 import bundledCatalog from '@/data/catalog.json';
 import bundledAndroid from '@/data/android.json';
 
 type Build = ReturnType<typeof readCatalog>[number];
 const initialBuilds = readCatalog(bundledCatalog);
-function HeroObject() {
-  return <div className="hero-object" aria-hidden="true" inert>
-    <img className="hero-render hero-render-dark" src="/images/hero-dark.webp" width="1050" height="1050" alt="" fetchPriority="high" decoding="async"/>
-    <img className="hero-render hero-render-light" src="/images/hero-light.webp" width="1050" height="1050" alt="" fetchPriority="high" decoding="async"/>
-  </div>;
-}
-
 export default function Site() {
   const [builds, setBuilds] = useState<Build[]>(initialBuilds);
   const [androidBuilds, setAndroidBuilds] = useState<Build[]>(readAndroidCatalog(bundledAndroid));
@@ -73,7 +67,7 @@ export default function Site() {
     <SiteHeader onLaunch={() => setLaunchNotice(true)}/>
     <main id="main">
       <section className="hero page-width" aria-labelledby="hero-heading">
-        <HeroObject/>
+        <HeroArtwork/>
         <div className="hero-content">
           <h1 id="hero-heading">Download Expo Go</h1>
           <p className="hero-description">Get the Expo Go app for the SDK your project uses.</p>

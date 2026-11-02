@@ -20,6 +20,10 @@ for (const path of ['/', ...pages.map(page => page.path)]) {
   assert.match(html, /name="description" content="[^"]{50,}/);
   assert.match(html, /name="robots" content="index,follow/);
   assert.match(html, /name="google-site-verification"/);
+  // Every entry page must retain the approved artwork in both themes.
+  for (const theme of ['light', 'dark']) {
+    assert.ok(html.includes(`src="/images/hero-${theme}.webp"`), `${path}: ${theme} Expo artwork`);
+  }
   const json = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
   assert.equal(json['@graph'][0]['@type'], 'WebSite');
   for (const page of pages) assert.ok(html.includes(`href="${page.path}"`), `${path}: SDK ${page.sdk} navigation`);
