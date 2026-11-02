@@ -118,6 +118,24 @@ class SdkDispatchTests(unittest.TestCase):
         self.assertEqual(workflow["jobs"]["watch-upstream"]["if"], "github.event_name == 'schedule'")
         self.assertEqual(workflow["jobs"]["resolve-config"]["if"], "github.event_name != 'schedule'")
 
+    def test_completed_sdk_publishers_wait_without_replacing_each_other(self):
+        concurrency = self.workflow["jobs"]["publish-release"]["concurrency"]
+        self.assertEqual(concurrency.get("queue"), "max")
+        self.assertFalse(concurrency["cancel-in-progress"])
+
+    def test_schedule_repairs_both_catalogs_without_rebuilding_native_apps(self):
+        repair = self.workflow["jobs"].get("reconcile-catalogs")
+        self.assertIsNotNone(repair, "Published releases need independent catalog recovery")
+        self.assertEqual(repair["if"], "github.event_name == 'schedule'")
+        self.assertNotIn("needs", repair)
+        self.assertEqual(repair["permissions"], {"contents": "write"})
+        self.assertEqual(repair["concurrency"], self.workflow["jobs"]["publish-release"]["concurrency"])
+        commands = "\n".join(step.get("run", "") for step in repair["steps"])
+        self.assertIn('scripts/livecontainer_source.py --repo "$GITHUB_REPOSITORY" --publish', commands)
+        self.assertIn('scripts/download_catalog.py --repo "$GITHUB_REPOSITORY" --publish', commands)
+        self.assertNotIn("xcodebuild", commands)
+        self.assertNotIn("upstream_release.py", commands)
+
     def test_old_hermes_uses_isolated_cmake3_before_pods_capture_tool_path(self):
         steps = self.workflow["jobs"]["build-expo-go-ios"]["steps"]
         native_index = next(i for i, step in enumerate(steps) if step["name"].startswith("Install native build tools"))

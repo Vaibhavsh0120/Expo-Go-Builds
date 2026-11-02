@@ -57,6 +57,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/upstream_release.py --watch --repo "$GITHUB_REPOSITORY"
 
+  # Retry catalog publication independently after transient post-release errors.
+  # Existing verified releases are reused; this job never starts a native build.
+  reconcile-catalogs:
+    name: Reconcile published SDK download catalogs
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-expo-go-releases
+      cancel-in-progress: false
+      queue: max
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout catalog publisher
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Reconcile verified LiveContainer source
+        run: python3 scripts/livecontainer_source.py --repo "$GITHUB_REPOSITORY" --publish
+      - name: Reconcile verified Android catalog
+        if: ${{ !cancelled() }}
+        run: python3 scripts/download_catalog.py --repo "$GITHUB_REPOSITORY" --publish
+
   resolve-config:
     if: github.event_name != 'schedule'
     name: Select SDK source and toolchain
@@ -631,6 +655,7 @@ jobs:
     concurrency:
       group: publish-expo-go-releases
       cancel-in-progress: false
+      queue: max
     env:
       GH_TOKEN: ${{ github.token }}
       SDK: ${{ needs.resolve-config.outputs.sdk }}

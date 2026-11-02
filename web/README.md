@@ -41,4 +41,6 @@ Keep the Google Search Console ownership meta tag in `src/components/SiteHead.as
 
 `npm run check:seo` validates the built HTML, metadata, sitemap, and published download links. Once the public ownership file is deployed, `npm run notify:indexnow` submits the canonical sitemap URLs to IndexNow. Its ownership key is public verification data, not a credential; an accepted notification confirms receipt only.
 
+`vercel.json` supplies content-type, framing, referrer, permissions, and content security headers. The policy allows local assets and the public GitHub catalog origin. Inline scripts and styles remain allowed for Astro's static hydration and theme setup; no third-party script origin or `unsafe-eval` is permitted. Check site updates in a browser for policy violations.
+
 Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. Installation is a separate full-width section below the balanced source and download columns, with a smaller responsive gap before the FAQ. The guide link highlights its heading for 700 ms after scrolling finishes. iOS tools use three columns on wide screens, two on tablets and one on phones. Native controls and scrollbars follow the selected theme.

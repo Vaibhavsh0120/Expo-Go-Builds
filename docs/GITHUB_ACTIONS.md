@@ -46,6 +46,13 @@ schedule delays. It checks stable official client versions and dispatches missin
 or changed supported SDK pairs. Unchanged pairs and active builds are skipped.
 Pushing alone does not start a native build.
 
+An independent scheduled job also reconciles both catalogs from verified published
+releases. It repairs feed updates after a transient publishing failure without
+rebuilding native apps. Unchanged catalogs create no commit. Catalog reconciliation
+and SDK publishers share a serialized queue that retains all pending jobs (up to
+GitHub's queue limit), so a burst of completed SDK builds cannot replace a waiting
+publisher.
+
 Future SDKs need reviewed source/toolchain settings. Development or beta metadata
 does not count as a stable release. A new stable SDK outside the supported range
 is reported as needing configuration.
