@@ -75,6 +75,13 @@ const structuredData = {
         apply();
         media.addEventListener('change', apply);
         window.addEventListener('expo-theme-change', syncIcons);
+        document.addEventListener('click', event => {
+          if (!(event.target instanceof Element) || !event.target.closest('[data-theme-toggle]')) return;
+          const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+          document.documentElement.dataset.theme = next;
+          try { localStorage.setItem('expo-theme', next); } catch {}
+          apply();
+        });
       })();
     </script>
   </head>

@@ -22,7 +22,6 @@ export default function Site() {
   const [androidBuilds, setAndroidBuilds] = useState<Build[]>(readAndroidCatalog(bundledAndroid));
   const [selectedSDK, setSelectedSDK] = useState(initialBuilds[0]?.sdk ?? 58);
   const [catalogState, setCatalogState] = useState<'bundled' | 'live' | 'offline'>('bundled');
-  const [darkTheme, setDarkTheme] = useState(false);
   const [copyState, setCopyState] = useState('');
   const [launchNotice, setLaunchNotice] = useState(false);
   const ios = builds.find((build) => build.sdk === selectedSDK);
@@ -57,23 +56,6 @@ export default function Site() {
     return () => { clearTimeout(timeout); controller.abort(); };
   }, []);
 
-  useEffect(() => {
-    const syncTheme = () => setDarkTheme(document.documentElement.classList.contains('dark'));
-    syncTheme();
-    window.addEventListener('expo-theme-change', syncTheme);
-    return () => window.removeEventListener('expo-theme-change', syncTheme);
-  }, []);
-
-  function changeTheme() {
-    const dark = !document.documentElement.classList.contains('dark');
-    const next = dark ? 'dark' : 'light';
-    setDarkTheme(dark);
-    try { localStorage.setItem('expo-theme', next); } catch { /* Keep the current session usable. */ }
-    document.documentElement.classList.toggle('dark', dark);
-    document.documentElement.dataset.theme = next;
-    window.dispatchEvent(new Event('expo-theme-change'));
-  }
-
   async function copySource() {
     setCopyState('Copying source URL…');
     try {
@@ -94,7 +76,7 @@ export default function Site() {
         <a className="nav-changelog" href={REPOSITORY_URL + '/releases'}>Changelog</a>
         <a className="nav-github" href={REPOSITORY_URL} aria-label="GitHub"><GithubIcon aria-hidden="true"/><span>GitHub</span></a>
         <a className="nav-container" aria-label="LiveContainer" href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/><span>LiveContainer</span></a>
-        <Button variant="ghost" className="theme-toggle" onClick={changeTheme} aria-label={'Switch to ' + (darkTheme ? 'light' : 'dark') + ' theme'} title={'Switch to ' + (darkTheme ? 'light' : 'dark') + ' theme'}>{darkTheme ? <MoonIcon aria-hidden="true"/> : <SunIcon aria-hidden="true"/>}</Button>
+        <Button variant="ghost" className="theme-toggle" data-theme-toggle="" aria-label="Toggle light and dark theme" title="Toggle light and dark theme"><SunIcon className="theme-icon-light" aria-hidden="true"/><MoonIcon className="theme-icon-dark" aria-hidden="true"/></Button>
       </nav>
     </header>
     <main id="main">
