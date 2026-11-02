@@ -8,6 +8,7 @@ npm run dev
 npm run check
 npm test
 npm run build
+npm run check:seo
 ```
 
 Vercel: set the project root directory to `web`, framework to Astro, build command to `npm run build`, and output directory to `dist`. No server adapter is required. `SITE_URL` optionally overrides the canonical site origin; the default is `https://expo-go-builds.vercel.app`.
@@ -31,5 +32,13 @@ Approved Better Design project: `09bcce15-d350-4958-9624-8c04a2d7b442`. The actu
 Responsive browser verification covers 320–1920px widths, matching light/dark geometry, equal download cards, iPad portrait and desktop layouts. SDK 52–58 links, clipboard copying, theme persistence, FAQ expansion, bundled downloads when catalog refresh fails, and all 14 no-JavaScript download links were checked. The measured spacing review found no critical or serious issues after excluding intentionally cropped, inert background decoration.
 
 The canonical repository is `Vaibhavsh0120/Expo-Go-Builds`. Catalog validation also accepts its former repository path so previously published download URLs remain usable after the rename.
+
+## Search discovery
+
+The homepage and `/sdk/52/` through `/sdk/58/` have unique titles, descriptions, canonical URLs, and structured data based on published downloads. `/sitemap.xml` lists these pages and `robots.txt` points crawlers to it. SDK release summaries are generated from the maintained repository notes by `prebuild`.
+
+Keep the Google Search Console ownership meta tag in `src/components/SiteHead.astro`. After deployment, submit `https://expo-go-builds.vercel.app/sitemap.xml` in the verified URL-prefix property. Sitemap submission and URL inspection requests help discovery; they do not guarantee indexing or ranking.
+
+`npm run check:seo` validates the built HTML, metadata, sitemap, and published download links. Once the public ownership file is deployed, `npm run notify:indexnow` submits the canonical sitemap URLs to IndexNow. Its ownership key is public verification data, not a credential; an accepted notification confirms receipt only.
 
 Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. Installation is a separate full-width section below the balanced source and download columns, with a smaller responsive gap before the FAQ. The guide link highlights its heading for 700 ms after scrolling finishes. iOS tools use three columns on wide screens, two on tablets and one on phones. Native controls and scrollbars follow the selected theme.

@@ -1,5 +1,7 @@
 ---
 import Site from '../components/Site';
+import SiteHead from '../components/SiteHead.astro';
+import { homeGraph } from '../lib/seo.mjs';
 import '@fontsource-variable/inter';
 import '../styles/globals.css';
 import '../styles/site.css';
@@ -12,115 +14,11 @@ const description = 'Download Expo Go for SDK 52–58: community iOS IPAs, origi
 const builds = readCatalog(catalog);
 const androidBuilds = readAndroidCatalog(android);
 const downloads = [...builds.map(build => ({...build, os: 'iOS', format: 'IPA'})), ...androidBuilds.map(build => ({...build, os: 'Android', format: 'APK'}))];
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: title,
-  description,
-  url: canonical.href,
-  about: { '@type': 'SoftwareApplication', name: 'Expo Go', applicationCategory: 'DeveloperApplication', operatingSystem: 'iOS, Android', author: { '@type': 'Organization', name: 'Expo', url: 'https://expo.dev' } },
-  mainEntity: { '@type': 'ItemList', itemListElement: downloads.map((build, index) => ({ '@type': 'ListItem', position: index + 1, item: { '@type': 'SoftwareApplication', name: `Expo Go SDK ${build.sdk} — ${build.os} ${build.format}`, softwareVersion: build.version, operatingSystem: `${build.os} ${build.minOSVersion} or later`, applicationCategory: 'DeveloperApplication', downloadUrl: build.downloadURL, isAccessibleForFree: true } })) },
-};
+const structuredData = homeGraph(canonical, title, description, downloads);
 ---
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#f8f9fb" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="robots" content="index,follow,max-image-preview:large" />
-    <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon-light.ico" sizes="16x16 32x32 64x64" data-theme-icon="/favicon-{theme}.ico" />
-    <link rel="icon" type="image/png" href="/favicon-light-32.png" sizes="32x32" data-theme-icon="/favicon-{theme}-32.png" />
-    <link rel="icon" type="image/png" href="/favicon-light-64.png" sizes="64x64" data-theme-icon="/favicon-{theme}-64.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" data-theme-icon="/favicon-{theme}.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon-light.png" sizes="180x180" data-theme-icon="/apple-touch-icon-{theme}.png" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Expo Go Builds — iOS & Android" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL('/social.png', canonical)} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Your SDK. Your phone. Expo Go for iOS and Android." />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL('/social.png', canonical)} />
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
-    <script is:inline>
-      (() => {
-        let theme = 'system';
-        try { const saved = localStorage.getItem('expo-theme'); if (['system', 'light', 'dark'].includes(saved)) theme = saved; } catch {}
-        const media = matchMedia('(prefers-color-scheme: dark)');
-        const syncIcons = () => {
-          const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-          document.querySelectorAll('link[data-theme-icon]').forEach(link => {
-            const href = link.dataset.themeIcon.replace('{theme}', mode);
-            if (link.getAttribute('href') !== href) link.setAttribute('href', href);
-          });
-        };
-        const apply = () => {
-          const mode = document.documentElement.dataset.theme || theme;
-          document.documentElement.classList.toggle('dark', mode === 'dark' || (mode === 'system' && media.matches));
-          syncIcons();
-          window.dispatchEvent(new Event('expo-theme-change'));
-        };
-        document.documentElement.dataset.theme = theme;
-        apply();
-        media.addEventListener('change', apply);
-        window.addEventListener('expo-theme-change', syncIcons);
-        document.addEventListener('click', event => {
-          if (!(event.target instanceof Element) || !event.target.closest('[data-theme-toggle]')) return;
-          const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-          document.documentElement.dataset.theme = next;
-          try { localStorage.setItem('expo-theme', next); } catch {}
-          apply();
-        });
-      })();
-    </script>
-    <script is:inline>
-      (() => {
-        let clearHighlight = () => {};
-        document.addEventListener('click', event => {
-          if (!(event.target instanceof Element) || !event.target.closest('[data-install-guide]')) return;
-          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-          const section = document.getElementById('installation-options');
-          const heading = document.querySelector('#signing-heading .guide-target');
-          if (!section || !heading) return;
-          event.preventDefault();
-          clearHighlight();
-          if (location.hash !== '#installation-options') history.pushState(null, '', '#installation-options');
-          let idleTimer;
-          let highlightTimer;
-          const highlight = () => {
-            window.removeEventListener('scroll', onScroll);
-            document.getElementById('signing-heading').focus({ preventScroll: true });
-            document.documentElement.setAttribute('data-guide-highlight', '');
-            highlightTimer = setTimeout(() => document.documentElement.removeAttribute('data-guide-highlight'), 700);
-          };
-          const onScroll = () => {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(highlight, 80);
-          };
-          clearHighlight = () => {
-            window.removeEventListener('scroll', onScroll);
-            clearTimeout(idleTimer);
-            clearTimeout(highlightTimer);
-            document.documentElement.removeAttribute('data-guide-highlight');
-          };
-          window.addEventListener('scroll', onScroll, { passive: true });
-          section.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
-          onScroll();
-        });
-      })();
-    </script>
-  </head>
+  <head><SiteHead title={title} description={description} canonical={canonical} structuredData={structuredData} /></head>
   <body>
     <Site client:load />
     <noscript>

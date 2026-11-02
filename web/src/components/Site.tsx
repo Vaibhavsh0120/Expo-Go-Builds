@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Button } from '@/components/ui/button';
-import { SunBoldDuotoneIcon as SunIcon, MoonBoldDuotoneIcon as MoonIcon, CopyBoldDuotoneIcon as CopyIcon, ArrowRightBoldDuotoneIcon as ArrowIcon } from '@/components/icons';
+import { CopyBoldDuotoneIcon as CopyIcon, ArrowRightBoldDuotoneIcon as ArrowIcon } from '@/components/icons';
 import { LayersLinearIcon as LayersIcon, BoxLinearIcon as BoxIcon, DownloadLinearIcon as DownloadIcon, SmartphoneLinearIcon as PhoneIcon, ArrowRightUpLinearIcon as ExternalIcon, AltArrowDownLinearIcon as ChevronIcon } from '@/components/icons/linear';
-import { GithubIcon } from '@/components/icons/brand';
+import SiteHeader from './SiteHeader';
+import SdkLinks from './SdkLinks';
 import { SOURCE_URL, ANDROID_URL, REPOSITORY_URL, SDK_CHOICES, readCatalog, readAndroidCatalog, liveContainerURL, formatSize } from '@/lib/catalog.mjs';
 import bundledCatalog from '@/data/catalog.json';
 import bundledAndroid from '@/data/android.json';
@@ -69,16 +70,7 @@ export default function Site() {
   return <>
     <a className="skip-link" href="#main">Skip to downloads</a>
     <div className="page-backdrop" aria-hidden="true" inert><span/></div>
-    <header className="site-header page-width">
-      <nav aria-label="Main navigation">
-        <a className="brand" href="/" aria-label="Expo Go Builds home">Expo Go</a>
-        <a className="nav-docs" href={REPOSITORY_URL + '/blob/main/docs/SDK_SUPPORT.md'}>Docs</a>
-        <a className="nav-changelog" href={REPOSITORY_URL + '/releases'}>Changelog</a>
-        <a className="nav-github" href={REPOSITORY_URL} aria-label="GitHub"><GithubIcon aria-hidden="true"/><span>GitHub</span></a>
-        <a className="nav-container" aria-label="LiveContainer" href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/><span>LiveContainer</span></a>
-        <Button variant="ghost" className="theme-toggle" data-theme-toggle="" aria-label="Toggle light and dark theme" title="Toggle light and dark theme"><SunIcon className="theme-icon-light" aria-hidden="true"/><MoonIcon className="theme-icon-dark" aria-hidden="true"/></Button>
-      </nav>
-    </header>
+    <SiteHeader onLaunch={() => setLaunchNotice(true)}/>
     <main id="main">
       <section className="hero page-width" aria-labelledby="hero-heading">
         <HeroObject/>
@@ -189,6 +181,7 @@ export default function Site() {
         </div>
       </section>
     </main>
+    <SdkLinks sdks={[...new Set([...builds, ...androidBuilds].map(build => build.sdk))].sort((a,b) => b-a)}/>
     <footer className="site-footer page-width"><p>Independent community builds. Not affiliated with Expo or Apple.</p><div><a href="https://expo.dev/go">Official Expo Go</a><a href="https://github.com/expo/expo">Expo source</a></div></footer>
   </>;
 }

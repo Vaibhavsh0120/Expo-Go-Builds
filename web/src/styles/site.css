@@ -266,3 +266,33 @@ html[data-guide-highlight] .guide-target { background:var(--guide-highlight); bo
   20%,65% { background:var(--guide-highlight); box-shadow:0 0 0.3em 0.1em var(--guide-glow); }
 }
 @media (prefers-reduced-motion:reduce) { html[data-guide-highlight] .guide-target { animation:none; } }
+
+/* Direct SDK pages stay static and share the homepage's surfaces and controls. */
+.sdk-links { display:flex; align-items:center; flex-wrap:wrap; gap:0.25rem 1.5rem; padding-bottom:1rem; font-size:0.75rem; color:var(--muted-foreground); }
+.sdk-links>span { font-weight:600; }
+.sdk-links>div { display:flex; flex-wrap:wrap; gap:0.25rem 0.75rem; }
+.sdk-links a { display:inline-flex; align-items:center; justify-content:center; min-height:2.75rem; padding-inline:0.25rem; }
+.sdk-links a[aria-current="page"] { color:var(--foreground); text-decoration:underline; text-underline-offset:0.25rem; font-weight:650; }
+.sdk-page { padding-block:2rem 3rem; }
+.sdk-breadcrumb { display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem; font-size:0.8125rem; color:var(--muted-foreground); margin-bottom:2.5rem; }
+.sdk-breadcrumb a { display:inline-flex; align-items:center; min-height:2.75rem; }
+.sdk-page-heading { max-width:60rem; margin-bottom:2rem; }
+.sdk-page h1 { font-size:clamp(2rem,4vw,3.5rem); font-weight:700; line-height:1.1; letter-spacing:-0.05em; margin:0 0 1rem; text-wrap:balance; }
+.sdk-page-heading p { color:var(--muted-foreground); font-size:1.0625rem; line-height:1.7; margin:0; }
+.sdk-page-downloads { max-width:46.25rem; }
+.sdk-page-downloads .download-cards { margin-top:0; }
+.sdk-signing-note { color:var(--muted-foreground); font-size:0.8125rem; line-height:1.7; margin:1rem 0 0; }
+.sdk-page-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:clamp(2rem,6vw,6rem); border-top:0.0625rem solid var(--border); margin-top:3rem; padding-top:2.5rem; }
+.sdk-release-notes p,.sdk-compatibility p { font-size:0.875rem; line-height:1.8; color:var(--muted-foreground); margin:0 0 1rem; }
+.sdk-release-notes .text-link { display:flex; width:fit-content; }
+.sdk-compatibility { border-top:0.0625rem solid var(--border); margin-top:2.5rem; padding-top:1.5rem; max-width:65rem; }
+.sdk-compatibility a { color:var(--foreground); text-decoration:underline; text-underline-offset:0.2em; }
+@media (hover:hover) and (pointer:fine) { .sdk-links a:hover,.sdk-breadcrumb a:hover { text-decoration:underline; text-underline-offset:0.25rem; } }
+@media (max-width:600px) {
+ .sdk-page { padding-block:1rem 2rem; }
+ .sdk-breadcrumb { margin-bottom:1.5rem; }
+ .sdk-page-heading p { font-size:0.9375rem; }
+ .sdk-page-grid { grid-template-columns:1fr; gap:2rem; margin-top:2rem; padding-top:2rem; }
+ .sdk-links { gap:0.25rem; flex-direction:column; align-items:flex-start; }
+ .sdk-links>div { column-gap:0.625rem; }
+}

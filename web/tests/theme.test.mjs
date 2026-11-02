@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
-const page = readFileSync(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
+const page = readFileSync(new URL('../src/components/SiteHead.astro', import.meta.url), 'utf8');
 const script = page.match(/<script is:inline>([\s\S]*?)<\/script>/)[1];
 
 // Exercise the actual early page script with no React runtime present.

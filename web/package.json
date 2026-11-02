@@ -10,6 +10,8 @@
     "preview": "astro preview --host 0.0.0.0",
     "check": "astro check",
     "test": "node --test tests/*.test.mjs",
+    "check:seo": "node scripts/check-seo.mjs",
+    "notify:indexnow": "node scripts/notify-indexnow.mjs",
     "prebuild": "node scripts/sync-catalog.mjs"
   },
   "dependencies": {

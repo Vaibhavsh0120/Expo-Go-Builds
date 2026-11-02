@@ -57,13 +57,13 @@ when keeping multiple copies. [Source and installation guide →](docs/LIVECONTA
 
 | Expo SDK | Support | SDK information |
 |:--:|:--:|---|
-| **58** | ✅ | React Native 0.88 · iOS 16.4+ · [Notes](releases/sdk-58.md) |
-| **57** | ✅ | React Native 0.86 · iOS 16.4+ · [Notes](releases/sdk-57.md) |
-| **56** | ✅ | React Native 0.85 · iOS 16.4+ · [Notes](releases/sdk-56.md) |
-| **55** | ✅ | React Native 0.83 · iOS 15.1+ · [Notes](releases/sdk-55.md) |
-| **54** | ✅ | React Native 0.81 · iOS 15.1+ · [Notes](releases/sdk-54.md) |
-| **53** | ✅ | React Native 0.79 · iOS 15.1+ · [Notes](releases/sdk-53.md) |
-| **52** | ✅ | React Native 0.76 · iOS 15.1+ · [Notes](releases/sdk-52.md) |
+| [**58**](https://expo-go-builds.vercel.app/sdk/58/) | ✅ | React Native 0.88 · iOS 16.4+ · [Notes](releases/sdk-58.md) |
+| [**57**](https://expo-go-builds.vercel.app/sdk/57/) | ✅ | React Native 0.86 · iOS 16.4+ · [Notes](releases/sdk-57.md) |
+| [**56**](https://expo-go-builds.vercel.app/sdk/56/) | ✅ | React Native 0.85 · iOS 16.4+ · [Notes](releases/sdk-56.md) |
+| [**55**](https://expo-go-builds.vercel.app/sdk/55/) | ✅ | React Native 0.83 · iOS 15.1+ · [Notes](releases/sdk-55.md) |
+| [**54**](https://expo-go-builds.vercel.app/sdk/54/) | ✅ | React Native 0.81 · iOS 15.1+ · [Notes](releases/sdk-54.md) |
+| [**53**](https://expo-go-builds.vercel.app/sdk/53/) | ✅ | React Native 0.79 · iOS 15.1+ · [Notes](releases/sdk-53.md) |
+| [**52**](https://expo-go-builds.vercel.app/sdk/52/) | ✅ | React Native 0.76 · iOS 15.1+ · [Notes](releases/sdk-52.md) |
 
 Android requires Android 7.0+ for the currently verified APKs. Ticks indicate published IPA and APK downloads; [actual build and device evidence](docs/SDK_SUPPORT.md#build-and-device-evidence)
 is recorded separately. The website enables downloads only after files are published.

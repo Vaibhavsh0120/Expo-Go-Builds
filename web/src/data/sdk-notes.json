@@ -1,0 +1,37 @@
+{
+  "52": {
+    "date": "2024-11-12",
+    "url": "https://expo.dev/changelog/2024-11-12-sdk-52",
+    "summary": "Expo Go for projects targeting Expo SDK 52, using the React Native 0.76 and React 18.3 release families. This SDK introduced the New Architecture by default for new projects and the stable expo-video library. Expo Go itself supports the New Architecture only."
+  },
+  "53": {
+    "date": "2025-04-30",
+    "url": "https://expo.dev/changelog/sdk-53",
+    "summary": "Expo Go for projects targeting Expo SDK 53, using the React Native 0.79 and React 19.0 release families. SDK 53 enabled the New Architecture by default across projects, made expo-audio stable, and enabled edge-to-edge display in Expo Go on Android."
+  },
+  "54": {
+    "date": "2025-09-10",
+    "url": "https://expo.dev/changelog/sdk-54",
+    "summary": "Expo Go for projects targeting Expo SDK 54, based on the React Native 0.81 and React 19.1 release families. SDK 54 introduced the new File System API, improved autolinking, and Liquid Glass integration for supported toolchains. Those are upstream SDK features; this community build's capabilities depend on its compiled native modules and build toolchain."
+  },
+  "55": {
+    "date": "2026-02-25",
+    "url": "https://expo.dev/changelog/sdk-55",
+    "summary": "Expo Go for projects targeting Expo SDK 55, based on the React Native 0.83 and React 19.2 release families. SDK 55 moved to the New Architecture, refreshed Expo Go, and expanded native navigation and Expo UI APIs. Some upstream features require a development build and are not available simply by installing Expo Go."
+  },
+  "56": {
+    "date": "2026-05-21",
+    "url": "https://expo.dev/changelog/sdk-56",
+    "summary": "Expo Go for projects targeting Expo SDK 56, based on the React Native 0.85 and React 19.2 release families. SDK 56 stabilized Expo UI's native APIs and raised the minimum iOS version to 16.4. Some SDK features, such as app extensions, need a development build rather than Expo Go."
+  },
+  "57": {
+    "date": "2026-06-30",
+    "url": "https://expo.dev/changelog/sdk-57",
+    "summary": "Expo Go for projects targeting Expo SDK 57, based on the React Native 0.86 and React 19.2 release families. SDK 57 is a focused upgrade from SDK 56. Its later React Native 0.86.3 update resolves the Hermes V1 memory and development-startup regressions described in Expo's release notes. Check the exact source commit below; older SDK 57 artifacts can predate that fix."
+  },
+  "58": {
+    "date": "2026-10-15",
+    "url": "https://expo.dev/changelog/sdk-58",
+    "summary": "Expo Go for projects targeting Expo SDK 58, based on the React Native 0.88 and React 19.3 release families. SDK 58 adds a shared launch-URL contract for Expo Go and development builds, document scanning APIs, and further native UI improvements. Its upstream iOS 27 features can depend on a newer toolchain or a development build; this IPA does not imply that every feature in Expo's announcement is available."
+  }
+}
