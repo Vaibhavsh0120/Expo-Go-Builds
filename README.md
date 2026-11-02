@@ -5,7 +5,7 @@
 <h1 align="center">Expo Go Builds</h1>
 <p align="center">Your SDK. Your phone.<br/>Community-built iOS IPAs and original Expo-signed Android APKs.</p>
 <p align="center">
-  <a href="https://expo-go-builds.vercel.app"><strong>Choose your SDK on the website →</strong></a><br/>
+  <a href="https://expo-go-builds.vercel.app"><img src="docs/assets/website-button.svg" alt="Open live website" width="206" height="46"></a><br/>
   <a href="https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases">GitHub Releases</a> ·
   <a href="#livecontainer-source">LiveContainer source</a> ·
   <a href="#github-actions">Build with Actions</a>
