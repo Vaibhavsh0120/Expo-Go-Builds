@@ -8,7 +8,6 @@ import { SOURCE_URL, ANDROID_URL, REPOSITORY_URL, SDK_CHOICES, readCatalog, read
 import bundledCatalog from '@/data/catalog.json';
 import bundledAndroid from '@/data/android.json';
 
-type Theme = 'system' | 'light' | 'dark';
 type Build = ReturnType<typeof readCatalog>[number];
 const initialBuilds = readCatalog(bundledCatalog);
 function HeroObject() {
@@ -23,7 +22,7 @@ export default function Site() {
   const [androidBuilds, setAndroidBuilds] = useState<Build[]>(readAndroidCatalog(bundledAndroid));
   const [selectedSDK, setSelectedSDK] = useState(initialBuilds[0]?.sdk ?? 58);
   const [catalogState, setCatalogState] = useState<'bundled' | 'live' | 'offline'>('bundled');
-  const [theme, setTheme] = useState<Theme>('system');
+  const [darkTheme, setDarkTheme] = useState(false);
   const [copyState, setCopyState] = useState('');
   const [launchNotice, setLaunchNotice] = useState(false);
   const ios = builds.find((build) => build.sdk === selectedSDK);
@@ -59,16 +58,17 @@ export default function Site() {
   }, []);
 
   useEffect(() => {
-    let saved: string | null = null;
-    try { saved = localStorage.getItem('expo-theme'); } catch { /* Storage may be disabled. */ }
-    if (saved === 'light' || saved === 'dark' || saved === 'system') setTheme(saved);
+    const syncTheme = () => setDarkTheme(document.documentElement.classList.contains('dark'));
+    syncTheme();
+    window.addEventListener('expo-theme-change', syncTheme);
+    return () => window.removeEventListener('expo-theme-change', syncTheme);
   }, []);
 
   function changeTheme() {
-    const next: Theme = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
-    setTheme(next);
+    const dark = !document.documentElement.classList.contains('dark');
+    const next = dark ? 'dark' : 'light';
+    setDarkTheme(dark);
     try { localStorage.setItem('expo-theme', next); } catch { /* Keep the current session usable. */ }
-    const dark = next === 'dark' || (next === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', dark);
     document.documentElement.dataset.theme = next;
     window.dispatchEvent(new Event('expo-theme-change'));
@@ -94,7 +94,7 @@ export default function Site() {
         <a className="nav-changelog" href={REPOSITORY_URL + '/releases'}>Changelog</a>
         <a className="nav-github" href={REPOSITORY_URL} aria-label="GitHub"><GithubIcon aria-hidden="true"/><span>GitHub</span></a>
         <a className="nav-container" aria-label="LiveContainer" href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/><span>LiveContainer</span></a>
-        <Button variant="ghost" className="theme-toggle" onClick={changeTheme} aria-label={'Theme: ' + theme + '. Switch theme.'} title={'Theme: ' + theme + ' (system → light → dark)'}>{theme === 'dark' ? <MoonIcon aria-hidden="true"/> : <SunIcon aria-hidden="true"/>}</Button>
+        <Button variant="ghost" className="theme-toggle" onClick={changeTheme} aria-label={'Switch to ' + (darkTheme ? 'light' : 'dark') + ' theme'} title={'Switch to ' + (darkTheme ? 'light' : 'dark') + ' theme'}>{darkTheme ? <MoonIcon aria-hidden="true"/> : <SunIcon aria-hidden="true"/>}</Button>
       </nav>
     </header>
     <main id="main">
@@ -157,21 +157,6 @@ export default function Site() {
             <a className="source-url" href={SOURCE_URL}>{SOURCE_URL}</a>
             <p className="copy-status" role="status">{copyState || 'In LiveContainer, open Sources and add this URL.'}</p>
           </div>
-          <p className="installation-note">iOS IPAs are unsigned community builds. Your installation tool handles signing. SDKs share Expo Go’s bundle identifier; use LiveContainer’s duplicate controls to keep more than one. <a href={REPOSITORY_URL + '/blob/main/docs/IPA_SIGNING.md'}>Read the iOS signing guide.</a></p>
-          <section className="signing-tools" id="installation-options" aria-labelledby="signing-heading">
-            <h3 id="signing-heading">Install on your device.</h3>
-            <p>On Android, open the APK and allow installation when asked. On iPhone or iPad, use one of these tools:</p>
-            <div className="signing-links">
-              <a href="https://sidestore.io/"><strong>SideStore <ExternalIcon aria-hidden="true"/></strong><span>Install and refresh IPAs on your device after setup.</span></a>
-              <a href="https://altstore.io/"><strong>AltStore Classic <ExternalIcon aria-hidden="true"/></strong><span>Set up AltServer on your Mac or PC, then import the IPA.</span></a>
-              <a href="https://livecontainer.github.io/docs/installation"><strong>LiveContainer <ExternalIcon aria-hidden="true"/></strong><span>Set up LiveContainer, then add our SDK source.</span></a>
-              <a href="https://sideloadly.io/"><strong>Sideloadly <ExternalIcon aria-hidden="true"/></strong><span>Sign and install the Expo Go IPA from Windows or macOS.</span></a>
-              <a href="https://iloader.app/"><strong>iloader <ExternalIcon aria-hidden="true"/></strong><span>Import IPAs from Windows, macOS, or Linux.</span></a>
-              <a href="https://github.com/opa334/TrollStore"><strong>TrollStore <ExternalIcon aria-hidden="true"/></strong><span>Permanent installs on supported older iOS versions only.</span></a>
-            </div>
-            <p className="signing-requirements">Free Apple Account signing needs regular refreshing. Check each tool’s setup and iOS requirements.</p>
-          </section>
-          <a className="text-link" href="https://github.com/LiveContainer/LiveContainer">LiveContainer setup guide <ArrowIcon aria-hidden="true"/></a>
         </div>
         <div className="build-details">
           <h2>Know your download.</h2>
@@ -180,6 +165,29 @@ export default function Site() {
           <p className="catalog-state">{catalogState === 'live' ? 'Release list refreshed from GitHub.' : catalogState === 'offline' ? 'Live refresh unavailable. Showing the bundled release list.' : 'Showing the bundled release list.'}</p>
           <a className="text-link" href={`${REPOSITORY_URL}/releases`}>Browse releases on GitHub <ArrowIcon aria-hidden="true"/></a>
         </div>
+        <section className="signing-tools" id="installation-options" aria-labelledby="signing-heading">
+          <h3 id="signing-heading">Install on your device.</h3>
+          <details className="platform-install">
+            <summary><span>Android</span><small>APK</small><ChevronIcon aria-hidden="true"/></summary>
+            <div className="platform-body"><p>Download the APK for your SDK, open it on Android, and allow installation from your browser or file manager if prompted.</p></div>
+          </details>
+          <details className="platform-install">
+            <summary><span>iPhone / iPad</span><small>IPA</small><ChevronIcon aria-hidden="true"/></summary>
+            <div className="platform-body">
+              <p className="installation-note">iOS IPAs are unsigned community builds. Your installation tool handles signing. SDKs share Expo Go’s bundle identifier; use LiveContainer’s duplicate controls to keep more than one. <a href={REPOSITORY_URL + '/blob/main/docs/IPA_SIGNING.md'}>Read the iOS signing guide.</a></p>
+              <div className="signing-links">
+            <a href="https://sidestore.io/"><strong>SideStore <ExternalIcon aria-hidden="true"/></strong><span>Install and refresh IPAs on your device after setup.</span></a>
+            <a href="https://altstore.io/"><strong>AltStore Classic <ExternalIcon aria-hidden="true"/></strong><span>Set up AltServer on your Mac or PC, then import the IPA.</span></a>
+            <a href="https://livecontainer.github.io/docs/installation"><strong>LiveContainer <ExternalIcon aria-hidden="true"/></strong><span>Set up LiveContainer, then add our SDK source.</span></a>
+            <a href="https://sideloadly.io/"><strong>Sideloadly <ExternalIcon aria-hidden="true"/></strong><span>Sign and install the Expo Go IPA from Windows or macOS.</span></a>
+            <a href="https://iloader.app/"><strong>iloader <ExternalIcon aria-hidden="true"/></strong><span>Import IPAs from Windows, macOS, or Linux.</span></a>
+            <a href="https://github.com/opa334/TrollStore"><strong>TrollStore <ExternalIcon aria-hidden="true"/></strong><span>Permanent installs on supported older iOS versions only.</span></a>
+              </div>
+              <p className="signing-requirements">Free Apple Account signing needs regular refreshing. Check each tool’s setup and iOS requirements.</p>
+              <a className="text-link" href="https://github.com/LiveContainer/LiveContainer">LiveContainer setup guide <ArrowIcon aria-hidden="true"/></a>
+            </div>
+          </details>
+        </section>
       </section>
 
       <section className="faq page-width" aria-labelledby="faq-heading">

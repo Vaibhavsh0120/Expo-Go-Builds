@@ -97,7 +97,7 @@ h2 { font-size:clamp(1.5625rem,2.55vw,2.25rem); line-height:1.15; font-weight:65
 .source-heading svg { width:0.9375rem; height:0.9375rem; }
 .source-url { display:flex; align-items:center; min-height:2.75rem; font-family:var(--font-mono,monospace); font-size:0.75rem; color:var(--muted-foreground); overflow-wrap:anywhere; line-height:1.8; user-select:all; }
 .copy-status { font-size:0.75rem; line-height:1.6; color:var(--muted-foreground); margin:0.9375rem 0 0; }
-.install-details>.installation-note { font-size:0.8125rem; line-height:1.75; margin:1.375rem 0 1.125rem; max-width:63ch; }
+.platform-body>.installation-note { font-size:0.8125rem; line-height:1.75; }
 .text-link { display:inline-flex; align-items:center; min-height:2.75rem; gap:0.5rem; font-size:0.8125rem; font-weight:500; text-underline-offset:0.25rem; }
 .text-link svg { width:1.0625rem; height:1.0625rem; }
 .build-details dl { margin:1.875rem 0 1rem; }
@@ -213,13 +213,35 @@ code { font-family:var(--font-mono,monospace); font-size:.88em; }
 
 .signing-tools { margin-block:2rem 1rem; scroll-margin-top:2rem; }
 .signing-tools h3 { margin:0 0 0.75rem; font-size:1.25rem; font-weight:650; letter-spacing:-0.03em; }
-.signing-tools>p { margin:0 0 1rem; color:var(--muted-foreground); font-size:0.875rem; line-height:1.7; }
+.platform-install { margin-top:0.75rem; border:0.0625rem solid var(--border); border-radius:0.875rem; background:var(--card); }
+.platform-install>summary { min-height:3.5rem; padding:1rem; display:flex; align-items:center; gap:0.75rem; list-style:none; cursor:pointer; font-size:0.875rem; font-weight:600; }
+.platform-install>summary::-webkit-details-marker { display:none; }
+.platform-install>summary>span { flex:1; }
+.platform-install>summary>small { color:var(--muted-foreground); font-size:0.75rem; font-weight:450; }
+.platform-install>summary>svg { width:1rem; height:1rem; flex:0 0 1rem; }
+.platform-install[open]>summary>svg { transform:rotate(180deg); }
+.platform-body { padding:0 1rem 1rem; }
+.platform-body>p { margin:0 0 1rem; color:var(--muted-foreground); font-size:0.875rem; line-height:1.7; }
+.platform-body>p:last-child { margin-bottom:0; }
 .signing-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:1fr; gap:0.75rem; }
 .signing-links>a { display:flex; flex-direction:column; gap:0.5rem; padding:1rem; min-height:5.5rem; border:0.0625rem solid var(--border); border-radius:0.875rem; background:var(--card); }
 .signing-links strong { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; font-size:0.875rem; font-weight:600; }
 .signing-links svg { width:1rem; height:1rem; flex:0 0 1rem; }
 .signing-links span { flex:1; font-size:0.75rem; line-height:1.6; color:var(--muted-foreground); }
 .signing-links>a:hover { background:var(--muted); }
-.signing-tools>.signing-requirements { margin-top:1rem; font-size:0.75rem; }
+.platform-body>.signing-requirements { margin-top:1rem; font-size:0.75rem; }
 @media (max-width:340px) { .site-header .nav-container span { display:none; } .site-header .nav-container { min-width:2.75rem; justify-content:center; } }
 @media (max-width:600px) { .signing-links { grid-template-columns:1fr; } }
+
+/* Closed instructions fit below the source; open instructions use the full row. */
+@media (min-width:601px) {
+ .details-section { align-items:start; row-gap:2rem; }
+ .install-details { grid-column:1; grid-row:1; }
+ .build-details { grid-column:2; grid-row:1 / span 2; }
+ .signing-tools { grid-column:1; grid-row:2; margin-block:0; }
+ .details-section:has(.platform-install[open]) .build-details { grid-row:1; }
+ .details-section:has(.platform-install[open]) .signing-tools { grid-column:1 / -1; }
+ .signing-links { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (min-width:1101px) { .signing-links { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:600px) { .signing-tools { margin-block:0; } }

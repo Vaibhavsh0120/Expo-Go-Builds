@@ -14,7 +14,7 @@ Vercel: set the project root directory to `web`, framework to Astro, build comma
 
 `prebuild` refreshes bundled data from the repository’s `apps.json` and `android.json` when available. Otherwise it uses the checked-in snapshot. The page refreshes from the public iOS and Android catalogs at runtime, validates repository-owned IPA/APK links, and keeps the bundled release list when the network fails. An SDK without an actual release entry is disabled. The source contains separate SDK entries; the download button uses the selected SDK and platform. Both themes share the same typography and geometry.
 
-Theme follows the system until a person chooses light or dark. The small top-right navbar toggle cycles system → light → dark → system and persists locally. The transparent hero-dark and hero-light artwork uses contain sizing with space around every edge, without a canvas, artificial floor or cropped image background. Useful content and download links never depend on animation.
+Theme follows the system until a person chooses light or dark. Each click on the small top-right toggle switches the visible appearance and saves that choice locally. Its icon and accessible label follow the effective theme, including system changes before a manual choice. The transparent hero-dark and hero-light artwork uses contain sizing with space around every edge, without a canvas, artificial floor or cropped image background. Useful content and download links never depend on animation.
 
 Browser icons use a flat, transparent Expo symbol from Simple Icons: dark in light mode and white in dark mode. They follow the saved website theme and system changes. Run `node scripts/build-icons.mjs` to regenerate the SVG, PNG, ICO and touch-icon exports from `src/assets/expo.svg`. The adaptive SVG also follows system appearance without JavaScript.
 
@@ -31,3 +31,5 @@ Approved Better Design project: `09bcce15-d350-4958-9624-8c04a2d7b442`. The actu
 Responsive browser verification covers 320–1920px widths, matching light/dark geometry, equal download cards, iPad portrait and desktop layouts. SDK 52–58 links, clipboard copying, theme persistence, FAQ expansion, bundled downloads when catalog refresh fails, and all 14 no-JavaScript download links were checked. The measured spacing review found no critical or serious issues after excluding intentionally cropped, inert background decoration.
 
 The canonical repository is `Vaibhavsh0120/Expo-Go-Builds`. Catalog validation also accepts its former repository path so previously published download URLs remain usable after the rename.
+
+Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. On tablet and desktop they fit beneath the source while closed, then expand across the full row when opened. iOS tools use three columns on wide screens, two on tablets and one on phones.
