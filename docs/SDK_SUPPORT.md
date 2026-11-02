@@ -48,8 +48,13 @@ replacement Xcode is not guaranteed; failed builds retain diagnostic logs.
   workspace configuration used by SDK 56–58.
 - **SDK 52 and 53 retain the older toolchain.** Both use Xcode 16.4 and
   minimum iOS 15.1, but SDK 52's monorepo Node pin is 20.12.2 and its
-  CocoaPods lock is 1.15.2. These builder settings still need a successful
-  native run. Their absent Brewfiles require explicit CMake/Ninja setup.
+  CocoaPods lock is 1.15.2. Both native builds and paired releases succeeded after the CMake fix
+  below. Their absent Brewfiles require explicit CMake/Ninja setup.
+  The first November runs reached native compilation but older Hermes
+  failed because CMake 4 removed its required `CMP0026=OLD` policy. The
+  builder isolates CMake **3.31.10** for these two SDKs and exposes its
+  real executable directory before CocoaPods resolves Hermes tools.
+  Other SDKs keep their upstream native tool settings.
   SDK 52 has no root `install:react-native-lab` script, so its React Native
   submodule dependencies are installed directly with Yarn.
 - **SDK 54 now needs Xcode 26 despite its older upstream CI pin.** Run
@@ -133,8 +138,8 @@ browser checks do not establish physical-device launch testing.
 
 | SDK | Evidence |
 |---|---|
-| 52 | Source and toolchain configuration inspected. Native IPA compilation, release publication, and device installation are not yet verified here. |
-| 53 | Source and toolchain configuration inspected. Native IPA compilation, release publication, and device installation are not yet verified here. |
+| 52 | IPA build, verified original Android APK, and paired release succeeded in [41291372969](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41291372969). Physical device installation not verified here. |
+| 53 | IPA build, verified original Android APK, and paired release succeeded in [41291374729](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41291374729). Physical device installation not verified here. |
 | 54 | Native compilation, arm64/plist/ZIP checks, and artifact upload succeeded in [run 41270904815](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41270904815). Its release step failed with HTTP 403; the exact verified artifact was recovered into [this release](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk54-20261101-043016), version 54.0.7, 34,727,630 bytes, SHA-256 `6ac1073f472670faf47e7ee15d1135abbb6158d9abdb819fc97f5f8c7db2b958`. Device installation remains unverified here. |
 | 55 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267544358) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk55-20261101-034221). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
 | 56 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31936279223) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk56-20260816-090047) from August 16. Device installation remains unverified here. |

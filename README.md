@@ -60,8 +60,7 @@ when keeping multiple copies. [Source and installation guide →](docs/LIVECONTA
 | **53** | ✅ | React Native 0.79 · iOS 15.1+ · [Notes](releases/sdk-53.md) |
 | **52** | ✅ | React Native 0.76 · iOS 15.1+ · [Notes](releases/sdk-52.md) |
 
-Android requires Android 7.0+ for the currently verified APKs. Ticks indicate configured
-support; [actual build and device evidence](docs/SDK_SUPPORT.md#build-and-device-evidence)
+Android requires Android 7.0+ for the currently verified APKs. Ticks indicate published IPA and APK downloads; [actual build and device evidence](docs/SDK_SUPPORT.md#build-and-device-evidence)
 is recorded separately. The website enables downloads only after files are published.
 
 ## GitHub Actions
@@ -104,3 +103,5 @@ Free Apple ID signing has Apple-imposed limits; keep your credentials on your ow
 
 Independent community project, unaffiliated with Expo or Apple.
 [Official Expo Go →](https://expo.dev/go) · [Expo source →](https://github.com/expo/expo)
+
+No license has been selected for this repository’s own code; ask before reusing it.

@@ -378,3 +378,24 @@ history is rewritten and no more powerful user token is required. The
 completed SDK 54 artifact was recovered without recompilation; its exact
 size and SHA-256 were verified before publishing. GitHub documents the
 permission rule in its [release API reference](https://docs.github.com/en/rest/releases/releases#create-a-release).
+
+## 2026-11-02 — Reference layout and static hero artwork
+
+**Decision**: Remove the experimental procedural Three.js sculpture and its
+dependencies. Use the existing transparent `hero-dark.webp` and
+`hero-light.webp` artwork with contain sizing and reserved space above the
+mobile heading. No artificial floor lighting or baked rectangular stage.
+The approved download layout uses smaller matching controls in both themes,
+local GitHub and Solar icons, and separate IPA/APK downloads for each SDK.
+This preserves the chosen artwork without requiring WebGL or a render loop.
+
+**Older builds**: SDK 52 and 53 completed native compilation and published
+paired IPA/APK releases after isolating CMake 3.31.10 for older Hermes.
+Their successful runs are linked in SDK_SUPPORT.md. Physical-device launch
+testing remains separate from CI and browser verification.
+
+**Release order verification**: On November 2, the public GitHub release page
+and release API both listed SDKs 58, 57, 56, 55, 54, 53, 52. Every entry
+contained its IPA, original signed APK, and Android verification receipt.
+No further release deletion or tag changes were necessary. The scheduled
+release watcher also completed successfully after the SDK 52/53 fixes.

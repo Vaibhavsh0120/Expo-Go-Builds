@@ -137,6 +137,58 @@
           "localizedDescription": "Expo Go for Expo SDK 54 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk54-20261101-043016"
         }
       ]
+    },
+    {
+      "name": "Expo Go SDK 53",
+      "bundleIdentifier": "host.exp.Exponent",
+      "developerName": "Expo · community build by Vaibhavsh0120",
+      "subtitle": "SDK 53 projects · iOS 15.1+",
+      "localizedDescription": "Expo Go for Expo SDK 53 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk53-20261101-094941",
+      "iconURL": "https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/docs/assets/expo-go-icon.png",
+      "tintColor": "#000020",
+      "version": "2.33.17",
+      "versionDate": "2026-11-01T09:49:48Z",
+      "versionDescription": "Expo Go for Expo SDK 53 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk53-20261101-094941",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk53-20261101-094941/ExpoGo-SDK53-unsigned.ipa",
+      "size": 31203064,
+      "versions": [
+        {
+          "version": "2.33.17",
+          "buildVersion": "2.33.17",
+          "minOSVersion": "15.1",
+          "size": 31203064,
+          "sha256": "ece1cdc6ea415af76fe4e42c0fa9d8c534ea628fe451ba109714c38992dd639f",
+          "date": "2026-11-01T09:49:48Z",
+          "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk53-20261101-094941/ExpoGo-SDK53-unsigned.ipa",
+          "localizedDescription": "Expo Go for Expo SDK 53 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk53-20261101-094941"
+        }
+      ]
+    },
+    {
+      "name": "Expo Go SDK 52",
+      "bundleIdentifier": "host.exp.Exponent",
+      "developerName": "Expo · community build by Vaibhavsh0120",
+      "subtitle": "SDK 52 projects · iOS 15.1+",
+      "localizedDescription": "Expo Go for Expo SDK 52 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk52-20261101-095021",
+      "iconURL": "https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/docs/assets/expo-go-icon.png",
+      "tintColor": "#000020",
+      "version": "2.32.18",
+      "versionDate": "2026-11-01T09:50:33Z",
+      "versionDescription": "Expo Go for Expo SDK 52 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk52-20261101-095021",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk52-20261101-095021/ExpoGo-SDK52-unsigned.ipa",
+      "size": 32096658,
+      "versions": [
+        {
+          "version": "2.32.18",
+          "buildVersion": "2.32.18",
+          "minOSVersion": "15.1",
+          "size": 32096658,
+          "sha256": "d9501c1ef97a16d2d5328b782644cba8a0e7f1f62dac0d9dc258691e0b27bbd1",
+          "date": "2026-11-01T09:50:33Z",
+          "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk52-20261101-095021/ExpoGo-SDK52-unsigned.ipa",
+          "localizedDescription": "Expo Go for Expo SDK 52 projects. Requires iOS 15.1 or later. Community-built unsigned IPA. Choose the SDK matching your project; import and signing are handled by your LiveContainer setup. These SDK builds share Expo Go's bundle identifier; use LiveContainer's install/duplicate controls if keeping more than one. Release notes: https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk52-20261101-095021"
+        }
+      ]
     }
   ],
   "news": []
