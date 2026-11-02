@@ -100,7 +100,8 @@ flowchart LR
 
 [SDK release notes](releases/README.md) · [Signing](docs/IPA_SIGNING.md) ·
 [Troubleshooting](docs/TROUBLESHOOTING.md) · [Build settings](docs/SDK_SUPPORT.md) ·
-[Contributing](docs/CONTRIBUTING.md) · [Website development](web/README.md)
+[Contributing](docs/CONTRIBUTING.md) · [Website development](web/README.md) ·
+[Public release review](docs/FINAL_REVIEW.md)
 
 Match the SDK to your project. Custom native modules may require an
 [Expo development build](https://docs.expo.dev/develop/development-builds/introduction/).
