@@ -1,5 +1,6 @@
 /* Shared geometry for the approved light and dark studio layouts. */
 :root {
+  color-scheme: light;
   --background: #f8f9fc;
   --foreground: #101114;
   --card: #ffffffa6;
@@ -12,10 +13,12 @@
   --ring: #5e6678;
   --page-max: 86.25rem;
   --section-space: 5.5rem;
+  --section-bridge: clamp(2rem,4vw,3.5rem);
   --guide-highlight: #1011140f;
   --guide-glow: #10111408;
 }
 .dark {
+  color-scheme: dark;
   --background: #090a0c;
   --foreground: #f6f6f7;
   --card: #ffffff08;
@@ -112,7 +115,7 @@ h2 { font-size:clamp(1.5625rem,2.55vw,2.25rem); line-height:1.15; font-weight:65
 .checksum p { margin:0.25rem 0 0; line-height:1.75; } .checksum code { display:block; overflow-wrap:anywhere; line-height:1.8; padding-top:0.625rem; }
 code { font-family:var(--font-mono,monospace); font-size:.88em; }
 .catalog-state { color:var(--muted-foreground); font-size:0.75rem; line-height:1.6; margin:1.25rem 0 0.5rem; }
-.faq { border-top:0.0625rem solid var(--border); padding-block:var(--section-space); display:grid; grid-template-columns:1fr 1.6fr; gap:5rem; }
+.faq { border-top:0.0625rem solid var(--border); padding-block:var(--section-bridge) var(--section-space); display:grid; grid-template-columns:1fr 1.6fr; gap:5rem; }
 .faq-intro p { font-size:0.9375rem; } .faq-items details { border-bottom:0.0625rem solid var(--border); } .faq-items details:first-child { border-top:0.0625rem solid var(--border); }
 .faq-items summary { padding:1.3125rem 0; display:flex; align-items:center; justify-content:space-between; gap:1.5rem; font-size:0.9375rem; font-weight:500; cursor:pointer; list-style:none; line-height:1.6; }
 .faq-items summary::-webkit-details-marker { display:none; } .faq-items summary::after { content:'+'; font-size:1.4375rem; font-weight:350; flex:0 0 1.25rem; text-align:center; line-height:1; color:var(--muted-foreground); }
@@ -219,7 +222,7 @@ code { font-family:var(--font-mono,monospace); font-size:.88em; }
 
 @media (max-width:600px) { .hero-render { top:0.5rem; bottom:0; height:calc(100% - 0.5rem); } }
 
-.signing-tools { margin-block:0; padding-block:0 var(--section-space); scroll-margin-top:2rem; }
+.signing-tools { margin-block:0; padding-block:0 var(--section-bridge); scroll-margin-top:2rem; }
 .signing-tools h2 { margin:0 0 1.5rem; }
 .signing-tools h2:focus { outline:none; }
 .platform-install { margin-top:0.75rem; border:0.0625rem solid var(--border); border-radius:0.875rem; background:var(--card); }
@@ -237,7 +240,7 @@ code { font-family:var(--font-mono,monospace); font-size:.88em; }
 .signing-links strong { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; font-size:0.875rem; font-weight:600; }
 .signing-links svg { width:1rem; height:1rem; flex:0 0 1rem; }
 .signing-links span { flex:1; font-size:0.75rem; line-height:1.6; color:var(--muted-foreground); }
-.signing-links>a:hover { background:var(--muted); }
+@media (hover:hover) and (pointer:fine) { .signing-links>a:hover { background:var(--muted); } }
 .platform-body>.signing-requirements { margin-top:1rem; font-size:0.75rem; }
 @media (max-width:340px) { .site-header .nav-container span { display:none; } .site-header .nav-container { min-width:2.75rem; justify-content:center; } }
 @media (max-width:600px) { .signing-links { grid-template-columns:1fr; } }

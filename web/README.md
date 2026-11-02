@@ -1,6 +1,6 @@
 # Expo Go Builds website
 
-Static Astro page with server-rendered React controls, the generated Better Design silver component system, and optimized silver and glass hero artwork. Primary downloads work from the rendered HTML before JavaScript loads. SDK selection uses an accessible Radix custom list with keyboard navigation, selected state, Escape dismissal and collision-aware placement. Theme switching and source copying hydrate on load.
+Static Astro page with server-rendered React controls, the generated Better Design silver component system, and optimized silver and glass hero artwork. Primary downloads work from the rendered HTML before JavaScript loads. SDK selection uses an accessible Radix custom list with keyboard navigation, selected state, Escape dismissal and collision-aware placement. SDK selection and source copying hydrate on load; theme switching works before React loads.
 
 ```sh
 npm ci
@@ -32,4 +32,4 @@ Responsive browser verification covers 320–1920px widths, matching light/dark 
 
 The canonical repository is `Vaibhavsh0120/Expo-Go-Builds`. Catalog validation also accepts its former repository path so previously published download URLs remain usable after the rename.
 
-Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. Installation is a separate full-width section below the balanced source and download columns. The guide link highlights its heading for 700 ms after scrolling finishes. iOS tools use three columns on wide screens, two on tablets and one on phones.
+Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. Installation is a separate full-width section below the balanced source and download columns, with a smaller responsive gap before the FAQ. The guide link highlights its heading for 700 ms after scrolling finishes. iOS tools use three columns on wide screens, two on tablets and one on phones. Native controls and scrollbars follow the selected theme.
