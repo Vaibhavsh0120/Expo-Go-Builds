@@ -12,10 +12,10 @@ import bundledAndroid from '@/data/android.json';
 
 type Build = ReturnType<typeof readCatalog>[number];
 const initialBuilds = readCatalog(bundledCatalog);
-export default function Site() {
+export default function Site({ initialSDK }: { initialSDK?: number }) {
   const [builds, setBuilds] = useState<Build[]>(initialBuilds);
   const [androidBuilds, setAndroidBuilds] = useState<Build[]>(readAndroidCatalog(bundledAndroid));
-  const [selectedSDK, setSelectedSDK] = useState(initialBuilds[0]?.sdk ?? 58);
+  const [selectedSDK, setSelectedSDK] = useState(initialSDK ?? initialBuilds[0]?.sdk ?? 58);
   const [catalogState, setCatalogState] = useState<'bundled' | 'live' | 'offline'>('bundled');
   const [copyState, setCopyState] = useState('');
   const [launchNotice, setLaunchNotice] = useState(false);

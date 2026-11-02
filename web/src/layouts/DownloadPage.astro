@@ -1,0 +1,37 @@
+---
+import Site from '../components/Site';
+import SiteHead from '../components/SiteHead.astro';
+import { readCatalog, readAndroidCatalog } from '../lib/catalog.mjs';
+import catalog from '../data/catalog.json';
+import android from '../data/android.json';
+import '@fontsource-variable/inter';
+import '../styles/globals.css';
+import '../styles/site.css';
+
+interface Props {
+  initialSDK?: number;
+  title: string;
+  description: string;
+  canonical: URL;
+  structuredData: Record<string, unknown>;
+}
+const { initialSDK, title, description, canonical, structuredData } = Astro.props;
+const downloads = [
+  ...readCatalog(catalog).map(build => ({...build, os: 'iOS', format: 'IPA'})),
+  ...readAndroidCatalog(android).map(build => ({...build, os: 'Android', format: 'APK'})),
+];
+---
+<!doctype html>
+<html lang="en">
+  <head><SiteHead title={title} description={description} canonical={canonical} structuredData={structuredData}/></head>
+  <body>
+    <Site initialSDK={initialSDK} client:load/>
+    <noscript>
+      <section class="page-width" style="padding-block: 32px" aria-label="Downloads without JavaScript">
+        <h2>Download by SDK</h2>
+        <p>The SDK switcher needs JavaScript. These published downloads work directly.</p>
+        <ul>{downloads.map(build => <li><a href={build.downloadURL}>Expo Go SDK {build.sdk} — {build.os} {build.minOSVersion}+, {build.format}</a></li>)}</ul>
+      </section>
+    </noscript>
+  </body>
+</html>

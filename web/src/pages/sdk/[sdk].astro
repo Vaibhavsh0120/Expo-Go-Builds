@@ -1,18 +1,9 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import SiteHead from '../../components/SiteHead.astro';
-import SiteHeader from '../../components/SiteHeader';
-import SdkLinks from '../../components/SdkLinks';
-import HeroArtwork from '../../components/HeroArtwork';
-import { DownloadLinearIcon as DownloadIcon, BoxLinearIcon as BoxIcon, ArrowRightUpLinearIcon as ExternalIcon } from '../../components/icons/linear';
+import DownloadPage from '../../layouts/DownloadPage.astro';
 import { sdkPages, sdkGraph } from '../../lib/seo.mjs';
-import { REPOSITORY_URL, formatSize, liveContainerURL } from '../../lib/catalog.mjs';
 import catalog from '../../data/catalog.json';
 import androidCatalog from '../../data/android.json';
-import notes from '../../data/sdk-notes.json';
-import '@fontsource-variable/inter';
-import '../../styles/globals.css';
-import '../../styles/site.css';
 
 export const getStaticPaths = (() => sdkPages(catalog, androidCatalog).map(page => ({
   params: { sdk: String(page.sdk) }, props: { page },
@@ -20,67 +11,9 @@ export const getStaticPaths = (() => sdkPages(catalog, androidCatalog).map(page 
 
 const { page } = Astro.props;
 const { sdk, ios, android } = page;
-const note = notes[String(sdk) as keyof typeof notes];
 const canonical = new URL(page.path, Astro.site);
 const title = `Expo Go SDK ${sdk} Download — iOS IPA & Android APK`;
 const description = `Download Expo Go SDK ${sdk} for iPhone, iPad and Android. ${ios ? `iOS ${ios.minOSVersion}+ unsigned IPA.` : ''} ${android ? `Android ${android.minOSVersion}+ signed APK.` : ''} Includes installation help and release details.`;
-const releaseURL = android?.releaseURL || ios?.downloadURL.replace('/download/', '/tag/').replace(/\/[^/]+$/, '');
 const structuredData = sdkGraph(canonical, title, description, page);
 ---
-<!doctype html>
-<html lang="en">
-  <head><SiteHead title={title} description={description} canonical={canonical} structuredData={structuredData}/></head>
-  <body>
-    <a class="skip-link" href="#main">Skip to downloads</a>
-    <SiteHeader/>
-    <main id="main" class="sdk-page page-width">
-      <nav class="sdk-breadcrumb" aria-label="Breadcrumb"><a href="/">Expo Go downloads</a><span aria-hidden="true">/</span><span aria-current="page">SDK {sdk}</span></nav>
-      <section class="sdk-hero" aria-labelledby="sdk-heading">
-        <HeroArtwork/>
-        <div class="sdk-hero-content">
-      <header class="sdk-page-heading">
-        <h1 id="sdk-heading">Download Expo Go SDK {sdk}</h1>
-        <p>For projects using <code>expo ~{sdk}.0.0</code>. Choose the file for your phone.</p>
-      </header>
-      <div class="sdk-page-downloads">
-        <div class="download-cards">
-          {ios && <a class="download-card ipa-card" href={ios.downloadURL}><DownloadIcon aria-hidden="true"/><span><strong>Download IPA</strong><small>iOS {ios.minOSVersion}+ · {formatSize(ios.size)}</small></span></a>}
-          {android && <a class="download-card apk-card" href={android.downloadURL}><DownloadIcon aria-hidden="true"/><span><strong>Download APK</strong><small>Android {android.minOSVersion}+ · {formatSize(android.size)}</small></span></a>}
-        </div>
-        <p class="sdk-signing-note">The iOS IPA needs signing or a configured LiveContainer installation. The Android APK keeps Expo’s original signature.</p>
-        <div class="secondary-actions">
-          <a href={liveContainerURL()}><BoxIcon aria-hidden="true"/>Add to LiveContainer</a>
-          <a href="/#installation-options"><ExternalIcon aria-hidden="true"/>Installation Guide</a>
-        </div>
-      </div>
-        </div>
-      </section>
-      <div class="sdk-page-grid">
-        <section class="build-details" aria-labelledby="package-heading">
-          <h2 id="package-heading">Your download.</h2>
-          <dl>
-            {ios && <div><dt>iOS app version</dt><dd>{ios.version}</dd></div>}
-            {android && <div><dt>Android app version</dt><dd>{android.version}</dd></div>}
-            {ios && <div><dt>Minimum iOS</dt><dd>{ios.minOSVersion}</dd></div>}
-            {android && <div><dt>Minimum Android</dt><dd>{android.minOSVersion}</dd></div>}
-          </dl>
-          {[ios, android].map((build, i) => build?.sha256 && <details class="checksum"><summary>{i === 0 ? 'IPA' : 'APK'} file checksum (SHA-256)</summary><code>{build.sha256}</code></details>)}
-          {releaseURL && <a class="text-link" href={releaseURL}>Release files and build provenance <ExternalIcon aria-hidden="true"/></a>}
-        </section>
-        <section class="sdk-release-notes" aria-labelledby="notes-heading">
-          <h2 id="notes-heading">About SDK {sdk}.</h2>
-          <p>{note.summary}</p>
-          <p>Upstream SDK release: <time datetime={note.date}>{note.date}</time>.</p>
-          <a class="text-link" href={note.url}>Official SDK {sdk} release notes <ExternalIcon aria-hidden="true"/></a>
-          <a class="text-link" href={`${REPOSITORY_URL}/blob/main/releases/sdk-${sdk}.md`}>Community package notes <ExternalIcon aria-hidden="true"/></a>
-        </section>
-      </div>
-      <aside class="sdk-compatibility" aria-label="Compatibility and installation">
-        <p>Match SDK {sdk} to the <code>expo</code> dependency in your project’s <code>package.json</code>. Custom native modules outside Expo Go require a <a href="https://docs.expo.dev/develop/development-builds/introduction/">development build</a>.</p>
-        <p>On Android, open the APK and allow installation when asked. On iPhone or iPad, use <a href="/#installation-options">SideStore, AltStore, LiveContainer, Sideloadly, or iloader</a>. Check the tool’s setup requirements before installing.</p>
-      </aside>
-    </main>
-    <SdkLinks sdks={sdkPages(catalog, androidCatalog).map(page => page.sdk)} current={sdk}/>
-    <footer class="site-footer page-width"><p>Independent community builds. Not affiliated with Expo or Apple.</p><div><a href="https://expo.dev/go">Official Expo Go</a><a href={REPOSITORY_URL}>GitHub</a></div></footer>
-  </body>
-</html>
+<DownloadPage initialSDK={sdk} title={title} description={description} canonical={canonical} structuredData={structuredData}/>

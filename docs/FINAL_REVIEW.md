@@ -6,6 +6,16 @@ were reviewed from source and against the public services. SEO was published in
 
 ## Visual follow-up
 
+The owner's subsequent direction is to keep `/` and `/sdk/N/` visually identical,
+with only SDK N preselected. Both now render `DownloadPage.astro` and the same
+`Site` component; the separate SDK page composition and styles have been removed.
+Route-specific search metadata stays in the document head. Browser comparisons
+of `/` with SDK 57 selected against `/sdk/57/` found identical visible text and
+section geometry at 390, 768, 1440, and 1728px in both themes. All seven SDK
+routes retain their selection and matching IPA/APK URLs after hydration, live
+catalog refresh, and reload. Built-page checks now require the shared dropdown,
+heading, artwork, and correct primary downloads on every SDK route.
+
 The owner caught an omission in the earlier review: the SDK pages had no Expo
 hero artwork, although the homepage did. The earlier checks did not establish
 visual parity, and their completion wording was too broad.

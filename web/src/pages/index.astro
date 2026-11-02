@@ -1,32 +1,13 @@
 ---
-import Site from '../components/Site';
-import SiteHead from '../components/SiteHead.astro';
+import DownloadPage from '../layouts/DownloadPage.astro';
 import { homeGraph } from '../lib/seo.mjs';
-import '@fontsource-variable/inter';
-import '../styles/globals.css';
-import '../styles/site.css';
 import { readCatalog, readAndroidCatalog } from '../lib/catalog.mjs';
 import catalog from '../data/catalog.json';
 import android from '../data/android.json';
 const canonical = new URL('/', Astro.site);
 const title = 'Expo Go Downloads — IPA & APK for SDK 52–58';
 const description = 'Download Expo Go for SDK 52–58: community iOS IPAs, original signed Android APKs, and one LiveContainer source. Choose the SDK your project uses.';
-const builds = readCatalog(catalog);
-const androidBuilds = readAndroidCatalog(android);
-const downloads = [...builds.map(build => ({...build, os: 'iOS', format: 'IPA'})), ...androidBuilds.map(build => ({...build, os: 'Android', format: 'APK'}))];
+const downloads = [...readCatalog(catalog).map(build => ({...build, os: 'iOS', format: 'IPA'})), ...readAndroidCatalog(android).map(build => ({...build, os: 'Android', format: 'APK'}))];
 const structuredData = homeGraph(canonical, title, description, downloads);
 ---
-<!doctype html>
-<html lang="en">
-  <head><SiteHead title={title} description={description} canonical={canonical} structuredData={structuredData} /></head>
-  <body>
-    <Site client:load />
-    <noscript>
-      <section class="page-width" style="padding-block: 32px" aria-label="Downloads without JavaScript">
-        <h2>Download by SDK</h2>
-        <p>The SDK switcher needs JavaScript. These published downloads work directly.</p>
-        <ul>{downloads.map((build) => <li><a href={build.downloadURL}>Expo Go SDK {build.sdk} — {build.os} {build.minOSVersion}+, {build.format}</a></li>)}</ul>
-      </section>
-    </noscript>
-  </body>
-</html>
+<DownloadPage title={title} description={description} canonical={canonical} structuredData={structuredData}/>

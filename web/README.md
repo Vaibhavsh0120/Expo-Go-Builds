@@ -35,7 +35,7 @@ The canonical repository is `Vaibhavsh0120/Expo-Go-Builds`. Catalog validation a
 
 ## Search discovery
 
-The homepage and `/sdk/52/` through `/sdk/58/` have unique titles, descriptions, canonical URLs, and structured data based on published downloads. `/sitemap.xml` lists these pages and `robots.txt` points crawlers to it. SDK release summaries are generated from the maintained repository notes by `prebuild`.
+The homepage and `/sdk/52/` through `/sdk/58/` use one shared page and the same design, copy, controls, artwork, and sections. A SDK URL supplies only the dropdown's initial selection; it selects the matching IPA/APK before JavaScript loads and keeps that selection through hydration, catalog refresh, and page reload. The root URL defaults to the latest bundled SDK. Each URL retains its own title, description, canonical URL, and structured data for search. `/sitemap.xml` lists these pages and `robots.txt` points crawlers to it.
 
 Keep the Google Search Console ownership meta tag in `src/components/SiteHead.astro`. After deployment, submit `https://expo-go-builds.vercel.app/sitemap.xml` in the verified URL-prefix property. Sitemap submission and URL inspection requests help discovery; they do not guarantee indexing or ranking.
 

@@ -20,6 +20,9 @@ for (const path of ['/', ...pages.map(page => page.path)]) {
   assert.match(html, /name="description" content="[^"]{50,}/);
   assert.match(html, /name="robots" content="index,follow/);
   assert.match(html, /name="google-site-verification"/);
+  assert.match(html, /id="sdk-version"/, `${path}: shared homepage SDK dropdown`);
+  assert.ok(!html.includes('sdk-breadcrumb'), `${path}: no separate SDK page layout`);
+  assert.match(html, /id="hero-heading">Download Expo Go<\/h1>/, `${path}: shared homepage heading`);
   // Every entry page must retain the approved artwork in both themes.
   for (const theme of ['light', 'dark']) {
     assert.ok(html.includes(`src="/images/hero-${theme}.webp"`), `${path}: ${theme} Expo artwork`);
@@ -28,6 +31,14 @@ for (const path of ['/', ...pages.map(page => page.path)]) {
   assert.equal(json['@graph'][0]['@type'], 'WebSite');
   for (const page of pages) assert.ok(html.includes(`href="${page.path}"`), `${path}: SDK ${page.sdk} navigation`);
   const page = pages.find(page => page.path === path);
+  if (page) {
+    const selected = html.match(/class="sdk-value"[^>]*>([\s\S]*?)<\/span>/)?.[1] || '';
+    assert.equal(selected.replace(/<[^>]*>/g, '').trim(), `${page.sdk}${page.sdk === pages[0].sdk ? ' (Latest)' : ''}`, `${path}: correct SDK selected before JavaScript`);
+    for (const build of [page.ios, page.android].filter(Boolean)) {
+      const kind = build === page.ios ? 'IPA' : 'APK';
+      assert.ok(html.includes(`href="${build.downloadURL}" aria-label="Download ${kind} for SDK ${page.sdk}"`), `${path}: primary ${kind} matches selected SDK`);
+    }
+  }
   if (page) for (const build of [page.ios, page.android].filter(Boolean)) {
     assert.ok(html.includes(`href="${build.downloadURL}"`), `${path}: real direct download`);
     assert.ok(html.includes(build.sha256), `${path}: published checksum`);
