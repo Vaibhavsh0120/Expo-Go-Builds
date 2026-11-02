@@ -70,8 +70,8 @@ export default function Site() {
     <a className="skip-link" href="#main">Skip to downloads</a>
     <div className="page-backdrop" aria-hidden="true" inert><span/></div>
     <header className="site-header page-width">
-      <a className="brand" href="/" aria-label="Expo Go Builds home">Expo Go</a>
       <nav aria-label="Main navigation">
+        <a className="brand" href="/" aria-label="Expo Go Builds home">Expo Go</a>
         <a className="nav-docs" href={REPOSITORY_URL + '/blob/main/docs/SDK_SUPPORT.md'}>Docs</a>
         <a className="nav-changelog" href={REPOSITORY_URL + '/releases'}>Changelog</a>
         <a className="nav-github" href={REPOSITORY_URL} aria-label="GitHub"><GithubIcon aria-hidden="true"/><span>GitHub</span></a>
@@ -116,7 +116,7 @@ export default function Site() {
             </div>
             <div className="secondary-actions">
               <Button asChild variant="outline"><a href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/>Add to LiveContainer</a></Button>
-              <Button asChild variant="outline"><a href="#installation-options"><ExternalIcon aria-hidden="true"/>Installation Guide</a></Button>
+              <Button asChild variant="outline"><a href="#installation-options" data-install-guide=""><ExternalIcon aria-hidden="true"/>Installation Guide</a></Button>
             </div>
             {launchNotice && <p className="launch-notice" role="status">Didn’t open? <a href="#source">Copy the source URL</a> into LiveContainer.</p>}
           </div>
@@ -139,6 +139,11 @@ export default function Site() {
             <a className="source-url" href={SOURCE_URL}>{SOURCE_URL}</a>
             <p className="copy-status" role="status">{copyState || 'In LiveContainer, open Sources and add this URL.'}</p>
           </div>
+          <ul className="source-points">
+            <li><strong>Match your project’s SDK.</strong><span>Check the <code>expo</code> dependency in <code>package.json</code> before installing.</span></li>
+            <li><strong>Keep the versions you need.</strong><span>Each entry updates within its SDK; newer SDKs stay separate.</span></li>
+            <li><strong>Refresh for SDK updates.</strong><span>New verified IPAs appear after their GitHub release is published.</span></li>
+          </ul>
         </div>
         <div className="build-details">
           <h2>Know your download.</h2>
@@ -147,8 +152,10 @@ export default function Site() {
           <p className="catalog-state">{catalogState === 'live' ? 'Release list refreshed from GitHub.' : catalogState === 'offline' ? 'Live refresh unavailable. Showing the bundled release list.' : 'Showing the bundled release list.'}</p>
           <a className="text-link" href={`${REPOSITORY_URL}/releases`}>Browse releases on GitHub <ArrowIcon aria-hidden="true"/></a>
         </div>
-        <section className="signing-tools" id="installation-options" aria-labelledby="signing-heading">
-          <h3 id="signing-heading">Install on your device.</h3>
+      </section>
+
+      <section className="signing-tools page-width" id="installation-options" aria-labelledby="signing-heading">
+          <h2 id="signing-heading" tabIndex={-1}><span className="guide-target">Install on your device.</span></h2>
           <details className="platform-install">
             <summary><span>Android</span><small>APK</small><ChevronIcon aria-hidden="true"/></summary>
             <div className="platform-body"><p>Download the APK for your SDK, open it on Android, and allow installation from your browser or file manager if prompted.</p></div>
@@ -169,7 +176,6 @@ export default function Site() {
               <a className="text-link" href="https://github.com/LiveContainer/LiveContainer">LiveContainer setup guide <ArrowIcon aria-hidden="true"/></a>
             </div>
           </details>
-        </section>
       </section>
 
       <section className="faq page-width" aria-labelledby="faq-heading">

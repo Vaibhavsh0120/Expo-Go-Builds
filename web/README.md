@@ -32,4 +32,4 @@ Responsive browser verification covers 320–1920px widths, matching light/dark 
 
 The canonical repository is `Vaibhavsh0120/Expo-Go-Builds`. Catalog validation also accepts its former repository path so previously published download URLs remain usable after the rename.
 
-Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. On tablet and desktop they fit beneath the source while closed, then expand across the full row when opened. iOS tools use three columns on wide screens, two on tablets and one on phones.
+Installation instructions use separate native Android and iPhone/iPad disclosures, closed by default and usable without JavaScript. Installation is a separate full-width section below the balanced source and download columns. The guide link highlights its heading for 700 ms after scrolling finishes. iOS tools use three columns on wide screens, two on tablets and one on phones.

@@ -84,6 +84,42 @@ const structuredData = {
         });
       })();
     </script>
+    <script is:inline>
+      (() => {
+        let clearHighlight = () => {};
+        document.addEventListener('click', event => {
+          if (!(event.target instanceof Element) || !event.target.closest('[data-install-guide]')) return;
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          const section = document.getElementById('installation-options');
+          const heading = document.querySelector('#signing-heading .guide-target');
+          if (!section || !heading) return;
+          event.preventDefault();
+          clearHighlight();
+          if (location.hash !== '#installation-options') history.pushState(null, '', '#installation-options');
+          let idleTimer;
+          let highlightTimer;
+          const highlight = () => {
+            window.removeEventListener('scroll', onScroll);
+            document.getElementById('signing-heading').focus({ preventScroll: true });
+            document.documentElement.setAttribute('data-guide-highlight', '');
+            highlightTimer = setTimeout(() => document.documentElement.removeAttribute('data-guide-highlight'), 700);
+          };
+          const onScroll = () => {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(highlight, 80);
+          };
+          clearHighlight = () => {
+            window.removeEventListener('scroll', onScroll);
+            clearTimeout(idleTimer);
+            clearTimeout(highlightTimer);
+            document.documentElement.removeAttribute('data-guide-highlight');
+          };
+          window.addEventListener('scroll', onScroll, { passive: true });
+          section.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+          onScroll();
+        });
+      })();
+    </script>
   </head>
   <body>
     <Site client:load />
