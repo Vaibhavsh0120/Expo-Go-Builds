@@ -1,0 +1,6 @@
+{
+  "library": "simple-icons",
+  "prefix": "simple-icons",
+  "source": "iconify",
+  "icons": ["expo"]
+}

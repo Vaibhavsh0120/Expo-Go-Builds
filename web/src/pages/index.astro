@@ -34,10 +34,11 @@ const structuredData = {
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64" />
-    <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/favicon-64.png" sizes="64x64" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="icon" href="/favicon-light.ico" sizes="16x16 32x32 64x64" data-theme-icon="/favicon-{theme}.ico" />
+    <link rel="icon" type="image/png" href="/favicon-light-32.png" sizes="32x32" data-theme-icon="/favicon-{theme}-32.png" />
+    <link rel="icon" type="image/png" href="/favicon-light-64.png" sizes="64x64" data-theme-icon="/favicon-{theme}-64.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" data-theme-icon="/favicon-{theme}.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-light.png" sizes="180x180" data-theme-icon="/apple-touch-icon-{theme}.png" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Expo Go Builds — iOS & Android" />
     <meta property="og:title" content={title} />
@@ -57,14 +58,23 @@ const structuredData = {
         let theme = 'system';
         try { const saved = localStorage.getItem('expo-theme'); if (['system', 'light', 'dark'].includes(saved)) theme = saved; } catch {}
         const media = matchMedia('(prefers-color-scheme: dark)');
+        const syncIcons = () => {
+          const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+          document.querySelectorAll('link[data-theme-icon]').forEach(link => {
+            const href = link.dataset.themeIcon.replace('{theme}', mode);
+            if (link.getAttribute('href') !== href) link.setAttribute('href', href);
+          });
+        };
         const apply = () => {
           const mode = document.documentElement.dataset.theme || theme;
           document.documentElement.classList.toggle('dark', mode === 'dark' || (mode === 'system' && media.matches));
+          syncIcons();
           window.dispatchEvent(new Event('expo-theme-change'));
         };
         document.documentElement.dataset.theme = theme;
         apply();
         media.addEventListener('change', apply);
+        window.addEventListener('expo-theme-change', syncIcons);
       })();
     </script>
   </head>

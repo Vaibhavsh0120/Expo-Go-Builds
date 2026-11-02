@@ -16,6 +16,8 @@ Vercel: set the project root directory to `web`, framework to Astro, build comma
 
 Theme follows the system until a person chooses light or dark. The small top-right navbar toggle cycles system → light → dark → system and persists locally. The transparent hero-dark and hero-light artwork uses contain sizing with space around every edge, without a canvas, artificial floor or cropped image background. Useful content and download links never depend on animation.
 
+Browser icons use a flat, transparent Expo symbol from Simple Icons: dark in light mode and white in dark mode. They follow the saved website theme and system changes. Run `node scripts/build-icons.mjs` to regenerate the SVG, PNG, ICO and touch-icon exports from `src/assets/expo.svg`. The adaptive SVG also follows system appearance without JavaScript.
+
 The actual generated Button and its MetalRing module are retained. Unused registry components and dependencies were removed to keep the project small. The primary download explicitly disables the optional decorative ring.
 
 ## Design source
