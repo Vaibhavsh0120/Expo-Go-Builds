@@ -103,7 +103,7 @@ def main():
     parser.add_argument("--sdk", type=int)
     parser.add_argument("--output", type=Path, default=Path("upstream.json"))
     parser.add_argument("--watch", action="store_true")
-    parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", "Vaibhavsh0120/Expo-Go-IOS-IPA-Builder"))
+    parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", "Vaibhavsh0120/Expo-Go-Builds"))
     args = parser.parse_args()
     if args.watch:
         watch(args.repo)

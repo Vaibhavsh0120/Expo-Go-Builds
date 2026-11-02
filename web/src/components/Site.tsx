@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import * as Select from '@radix-ui/react-select';
 import { Button } from '@/components/ui/button';
 import { SunBoldDuotoneIcon as SunIcon, MoonBoldDuotoneIcon as MoonIcon, CopyBoldDuotoneIcon as CopyIcon, ArrowRightBoldDuotoneIcon as ArrowIcon } from '@/components/icons';
 import { LayersLinearIcon as LayersIcon, BoxLinearIcon as BoxIcon, DownloadLinearIcon as DownloadIcon, SmartphoneLinearIcon as PhoneIcon, ArrowRightUpLinearIcon as ExternalIcon, AltArrowDownLinearIcon as ChevronIcon } from '@/components/icons/linear';
@@ -91,8 +92,9 @@ export default function Site() {
       <nav aria-label="Main navigation">
         <a className="nav-docs" href={REPOSITORY_URL + '/blob/main/docs/SDK_SUPPORT.md'}>Docs</a>
         <a className="nav-changelog" href={REPOSITORY_URL + '/releases'}>Changelog</a>
-        <a href={REPOSITORY_URL}><GithubIcon aria-hidden="true"/>GitHub</a>
-        <a className="nav-container" href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/>LiveContainer</a>
+        <a className="nav-github" href={REPOSITORY_URL} aria-label="GitHub"><GithubIcon aria-hidden="true"/><span>GitHub</span></a>
+        <a className="nav-container" aria-label="LiveContainer" href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/><span>LiveContainer</span></a>
+        <Button variant="ghost" className="theme-toggle" onClick={changeTheme} aria-label={'Theme: ' + theme + '. Switch theme.'} title={'Theme: ' + theme + ' (system → light → dark)'}>{theme === 'dark' ? <MoonIcon aria-hidden="true"/> : <SunIcon aria-hidden="true"/>}</Button>
       </nav>
     </header>
     <main id="main">
@@ -102,23 +104,37 @@ export default function Site() {
           <h1 id="hero-heading">Download Expo Go</h1>
           <p className="hero-description">Get the Expo Go app for the SDK your project uses.</p>
           <div className="download-controls">
-            <label className="sdk-select" htmlFor="sdk-version">
-              <LayersIcon aria-hidden="true"/><span className="select-label">SDK Version</span>
-              <select id="sdk-version" aria-label="SDK version" value={selectedSDK} onChange={event => setSelectedSDK(Number(event.target.value))}>
-                {[...SDK_CHOICES].reverse().map(sdk => {
-                  const available = builds.some(build => build.sdk === sdk) || androidBuilds.some(build => build.sdk === sdk);
-                  return <option key={sdk} value={sdk} disabled={!available}>{sdk}{sdk === newestSDK ? ' (Latest)' : ''}{!available ? ' — not published' : ''}</option>;
-                })}
-              </select>
-              <ChevronIcon className="select-chevron" aria-hidden="true"/>
-            </label>
+            <Select.Root value={String(selectedSDK)} onValueChange={value => setSelectedSDK(Number(value))}>
+              <Select.Trigger className="sdk-select" id="sdk-version" aria-label="SDK version">
+                <LayersIcon aria-hidden="true"/><span className="select-label">SDK Version</span>
+                <span className="sdk-value"><Select.Value>{selectedSDK}{selectedSDK === newestSDK ? ' (Latest)' : ''}</Select.Value></span>
+                <Select.Icon asChild><ChevronIcon className="select-chevron" aria-hidden="true"/></Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content className="sdk-menu" position="popper" sideOffset={8} collisionPadding={16}>
+                  <Select.ScrollUpButton className="sdk-scroll sdk-scroll-up"><ChevronIcon aria-hidden="true"/></Select.ScrollUpButton>
+                  <Select.Viewport className="sdk-menu-viewport">
+                    {[...SDK_CHOICES].reverse().map(sdk => {
+                      const available = builds.some(build => build.sdk === sdk) || androidBuilds.some(build => build.sdk === sdk);
+                      return <Select.Item className="sdk-option" key={sdk} value={String(sdk)} disabled={!available} textValue={'SDK ' + sdk}>
+                        <Select.ItemText>SDK {sdk}</Select.ItemText>
+                        {sdk === newestSDK && <span className="sdk-badge">Latest</span>}
+                        {!available && <span className="sdk-badge">Not published</span>}
+                        <Select.ItemIndicator className="sdk-selected"><span/></Select.ItemIndicator>
+                      </Select.Item>;
+                    })}
+                  </Select.Viewport>
+                  <Select.ScrollDownButton className="sdk-scroll"><ChevronIcon aria-hidden="true"/></Select.ScrollDownButton>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
             <div className="download-cards">
               {ios ? <Button asChild ring={false} className="download-card ipa-card"><a href={ios.downloadURL} aria-label={'Download IPA for SDK ' + selectedSDK}><DownloadIcon aria-hidden="true"/><span><strong>Download IPA</strong><small>iOS {ios.minOSVersion}+ · SDK {selectedSDK}</small></span></a></Button> : <Button disabled ring={false} className="download-card ipa-card"><DownloadIcon aria-hidden="true"/><span><strong>Download IPA</strong><small>Not yet published</small></span></Button>}
               {android ? <Button asChild variant="outline" className="download-card apk-card"><a href={android.downloadURL} aria-label={'Download APK for SDK ' + selectedSDK}><DownloadIcon aria-hidden="true"/><span><strong>Download APK</strong><small>Android {android.minOSVersion}+ · SDK {selectedSDK}</small></span></a></Button> : <Button disabled variant="outline" className="download-card apk-card"><DownloadIcon aria-hidden="true"/><span><strong>Download APK</strong><small>Not yet published</small></span></Button>}
             </div>
             <div className="secondary-actions">
               <Button asChild variant="outline"><a href={liveContainerURL()} onClick={() => setLaunchNotice(true)}><BoxIcon aria-hidden="true"/>Add to LiveContainer</a></Button>
-              <Button asChild variant="outline"><a href="#install"><ExternalIcon aria-hidden="true"/>Installation Guide</a></Button>
+              <Button asChild variant="outline"><a href="#installation-options"><ExternalIcon aria-hidden="true"/>Installation Guide</a></Button>
             </div>
             {launchNotice && <p className="launch-notice" role="status">Didn’t open? <a href="#source">Copy the source URL</a> into LiveContainer.</p>}
           </div>
@@ -142,6 +158,16 @@ export default function Site() {
             <p className="copy-status" role="status">{copyState || 'In LiveContainer, open Sources and add this URL.'}</p>
           </div>
           <p className="installation-note">iOS IPAs are unsigned community builds. Your installation tool handles signing. SDKs share Expo Go’s bundle identifier; use LiveContainer’s duplicate controls to keep more than one. <a href={REPOSITORY_URL + '/blob/main/docs/IPA_SIGNING.md'}>Read the iOS signing guide.</a></p>
+          <section className="signing-tools" id="installation-options" aria-labelledby="signing-heading">
+            <h3 id="signing-heading">Install on your device.</h3>
+            <p>On Android, open the APK and allow installation when asked. On iPhone or iPad, use one of these tools:</p>
+            <div className="signing-links">
+              <a href="https://sidestore.io/"><strong>SideStore <ExternalIcon aria-hidden="true"/></strong><span>Install and refresh IPAs on your device after setup.</span></a>
+              <a href="https://altstore.io/"><strong>AltStore Classic <ExternalIcon aria-hidden="true"/></strong><span>Set up AltServer on your Mac or PC, then import the IPA.</span></a>
+              <a href="https://livecontainer.github.io/docs/installation"><strong>LiveContainer <ExternalIcon aria-hidden="true"/></strong><span>Set up LiveContainer, then add our SDK source.</span></a>
+              <a href="https://sideloadly.io/"><strong>Sideloadly <ExternalIcon aria-hidden="true"/></strong><span>Sign and install the Expo Go IPA from Windows or macOS.</span></a>
+            </div>
+          </section>
           <a className="text-link" href="https://github.com/LiveContainer/LiveContainer">LiveContainer setup guide <ArrowIcon aria-hidden="true"/></a>
         </div>
         <div className="build-details">
@@ -164,6 +190,6 @@ export default function Site() {
         </div>
       </section>
     </main>
-    <footer className="site-footer page-width"><p>Independent community builds. Not affiliated with Expo or Apple.</p><div><a href="https://expo.dev/go">Official Expo Go</a><a href="https://github.com/expo/expo">Expo source</a><Button variant="ghost" className="theme-toggle" onClick={changeTheme} aria-label={'Theme: ' + theme + '. Switch theme.'}>{theme === 'dark' ? <MoonIcon aria-hidden="true"/> : <SunIcon aria-hidden="true"/>}Theme: {theme}</Button></div></footer>
+    <footer className="site-footer page-width"><p>Independent community builds. Not affiliated with Expo or Apple.</p><div><a href="https://expo.dev/go">Official Expo Go</a><a href="https://github.com/expo/expo">Expo source</a></div></footer>
   </>;
 }

@@ -1,126 +1,61 @@
-# IPA_SIGNING.md
+# Install the iOS IPA
 
-## What an unsigned IPA is
+Download the IPA for your project's SDK from [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases) or the [website](https://expo-go-builds.vercel.app). These are compiled, unsigned device builds: tapping the IPA alone does not install it.
 
-An `.ipa` is just a renamed `.zip` containing a `Payload/` folder with the
-compiled `.app` bundle inside. iOS refuses to run *any* app binary unless
-it's cryptographically signed by a certificate iOS trusts — normally one
-issued by Apple to a registered developer.
+## Choose an installation tool
 
-This workflow builds the `.app` with `CODE_SIGNING_ALLOWED=NO` and related
-flags, meaning `xcodebuild` compiles and links the binary but never signs
-it. The resulting `.ipa` is real, structurally valid, and fully compiled
-— but not signed, so it cannot be installed on a device as-is. The
-workflow's build summary and validation output both label it explicitly:
-**"Unsigned physical-device IPA — requires signing before installation."**
+| Tool | Best fit | Official website and setup |
+|---|---|---|
+| **SideStore** | Install and refresh IPAs on your iPhone or iPad after initial computer setup. | [Get SideStore](https://sidestore.io/) · [Setup guide](https://docs.sidestore.io/docs/installation/prerequisites) |
+| **AltStore Classic** | Use AltServer on a Mac or Windows PC, then import the IPA into AltStore Classic. | [Get AltStore Classic / AltServer](https://altstore.io/) · [Official guide](https://faq.altstore.io/altstore-classic/your-altstore) |
+| **LiveContainer** | Keep separate SDK entries in one source and run imported apps inside LiveContainer. | [Install LiveContainer](https://livecontainer.github.io/docs/installation) · [Add this project's source](LIVECONTAINER.md) |
+| **Sideloadly** | Sign and install the Expo Go IPA from Windows or macOS. | [Get Sideloadly](https://sideloadly.io/) |
 
-## Why GitHub Actions doesn't sign it
+Choose **AltStore Classic** for importing this IPA; the AltStore homepage also offers PAL. Follow each tool's current official setup instructions rather than downloading unofficial copies.
 
-Signing requires an Apple ID and, typically, an Apple Developer Program
-membership (or at minimum a free/personal Apple ID used through a signing
-tool). Doing this inside CI would mean putting your Apple credentials — or
-a certificate/private key derived from them — into a GitHub Secret, where
-an automated system holds and uses them unattended.
+## SideStore or AltStore Classic
 
-**This repository will never ask for that.** No step in this pipeline
-requests or stores an Apple ID password, a 2FA/verification code, a `.p12`
-certificate, a private key, or a provisioning profile. Compilation
-(needs macOS, doesn't need your Apple identity) and signing (needs your
-Apple identity, doesn't need macOS) are deliberately kept as separate
-stages, run on separate machines, by design — not as a limitation to work
-around.
+1. Install the tool using its official guide above.
+2. Download `ExpoGo-SDKN-unsigned.ipa` for the SDK your project uses.
+3. Open the tool's **My Apps** screen, tap **+**, and select the IPA. Complete signing in that tool.
+4. Keep its refresh method configured so the signed app remains usable.
 
-## How Sideloadly can be used afterward
+SideStore needs its documented on-device VPN and Wi-Fi for installation and refreshing. AltStore Classic uses AltServer; follow the official guide for your computer and device.
 
-[Sideloadly](https://sideloadly.io/) is a free, third-party Windows/macOS
-tool that signs an `.ipa` using your Apple ID and installs it to a
-connected iPhone/iPad over USB. It is **not an official Apple product** —
-it reimplements Apple's developer-signing protocol using your Apple ID
-credentials, entered locally into the Sideloadly app on your own machine,
-never sent to or stored by this repository or GitHub Actions.
+## LiveContainer
 
-Basic flow:
+1. [Set up LiveContainer using its official installation guide](https://livecontainer.github.io/docs/installation).
+2. Open **LiveContainer → Sources → +** and add:
 
-1. Download the `.ipa` from this workflow's Actions artifact (or the
-   existing "SDK 57 for iOS" Release).
-2. Open Sideloadly, connect your iPhone/iPad via USB.
-3. Drag the `.ipa` into Sideloadly, enter your Apple ID when prompted.
-4. Click Start. Sideloadly signs the IPA locally and installs it via USB.
+```text
+https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-Builds/main/apps.json
+```
 
-## Why Apple ID signing is handled locally
+3. Choose the separate Expo Go SDK entry matching your project and install it inside LiveContainer.
 
-Because Sideloadly runs on your own Windows machine, your Apple ID
-credentials never leave your computer or touch this repository, GitHub's
-servers, or the GitHub Actions runner. The only thing that crosses that
-boundary is the already-compiled, unsigned `.ipa` file — which contains no
-credentials of any kind.
+LiveContainer's own setup and certificate requirements still apply. Its official guide excludes Sideloadly as a method for installing the LiveContainer host; use a method that guide supports. Sideloadly remains an option for installing the **Expo Go IPA directly**.
 
-## Free Apple ID signing limitations
+All SDKs share Expo Go's bundle identifier. Use LiveContainer's duplicate controls when keeping several SDKs; a conventional installation can replace an existing Expo Go app.
 
-These are Apple-imposed restrictions on *any* app signed with a
-free/personal-team Apple ID (not something Sideloadly or this repo could
-remove even if they wanted to):
+## Sideloadly
 
-- **7-day expiration.** Apps signed this way stop launching after 7 days.
-  To refresh: reopen Sideloadly, re-drag the same `.ipa`, click Start again
-  — no need to re-run the GitHub Actions build unless you specifically want
-  a newer source commit.
-- **3 actively-signed apps at a time**, per free Apple ID.
-- **10 App ID registrations per rolling 7-day window**, per free Apple ID.
-  If Sideloadly errors about a maximum number of apps or App IDs, this is
-  the cause — free up a slot at
-  [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security, or
-  wait out the window.
-- **No entitlements a paid Developer Program membership would unlock** —
-  see the next section.
+1. [Install Sideloadly](https://sideloadly.io/) on Windows or macOS and complete its prerequisites.
+2. Connect your iPhone or iPad, then load the downloaded Expo Go IPA.
+3. Supply your Apple Account through Sideloadly and start signing/installing.
+4. Configure its refresh feature or re-sign the same IPA when needed. A refresh does not require rebuilding Expo Go.
 
-None of this is specific to SDK 56 vs. SDK 57 — it applies identically to
-both, and to Expo Go builds from any source, sideloaded this way.
+## Signing and device settings
 
-## What's unavailable after a free-Apple-ID resign
+This repository and its GitHub Actions never request your Apple Account password, verification codes, certificates or private keys. Signing happens through your chosen tool, which communicates with the services its official guide describes.
 
-Expo Go's real entitlements file (`Exponent.entitlements`) requests Push
-Notifications, Sign In with Apple, Associated Domains (universal links to
-`expo.dev`/`exp.host`), and iCloud — none of which a free Apple ID can be
-granted (an Apple Developer Program restriction, not a bug in this
-pipeline). This workflow builds with `CODE_SIGN_ENTITLEMENTS=""`
-specifically so nothing tries to bake those requests into the unsigned
-binary; Sideloadly then signs with whatever minimal entitlement set its
-own free provisioning profile supports.
+Free Apple Account signing normally expires after seven days and has app/App ID limits. Follow your tool's refresh instructions. Supported entitlements and account limits depend on Apple's provisioning and the tool; a free signature does not grant every upstream Expo entitlement.
 
-**What breaks:**
-- Push notifications (needs `aps-environment`, paid-team only).
-- Sign In with Apple, inside Expo Go's own account screen.
-- Universal links (`https://expo.dev/...` opening directly in-app — needs
-  Associated Domains, paid-team only). The `exp://` custom URL scheme —
-  what QR-code scanning and "Open in Expo Go" links actually use
-  day-to-day — is **not affected**, since it's a plain custom scheme, not
-  an entitlement.
-- Any iCloud-backed features used internally by the client.
+If iOS asks, trust the developer under **Settings → General → VPN & Device Management**. Enable Developer Mode when your tool or iOS requests it. Use the selected SDK's displayed minimum iOS version.
 
-**What works:** scanning a QR code or typing an `exp://` dev-server URL,
-loading and running your JS bundle via Metro, the in-app dev menu, fast
-refresh, and standard Expo SDK module functionality inside a running
-project — i.e., the actual point of Expo Go for day-to-day development.
+## What to expect
 
-## How to trust the developer profile on iOS
+The CI build produces an unsigned IPA without an Apple signing identity. A sideloading tool supplies a suitable signature, or LiveContainer runs the imported app within its configured host.
 
-After Sideloadly installs the app, iOS will refuse to launch it until you
-explicitly trust the signing identity:
+Push notifications, account features, universal links and other entitlement-dependent behavior may differ from the official App Store client. Build, hash and browser checks do not prove physical-device installation or every runtime feature. SDK-specific evidence is recorded in [SDK support](SDK_SUPPORT.md#build-and-device-evidence).
 
-**Settings → General → VPN & Device Management** (labeled "Profiles &
-Device Management" on some iOS versions) **→** tap your Apple ID under
-**Developer App** **→ Trust "\<your Apple ID\>"** **→** confirm.
-
-Then launch Expo Go from the Home Screen as normal.
-
-## How to reinstall/refresh the app when necessary
-
-- **After the 7-day expiration**: reopen Sideloadly, re-drag the same
-  `.ipa` file you already have, click Start. No rebuild needed.
-- **To get a newer SDK patch/commit**: re-run the GitHub Actions workflow
-  (same `expo_sdk` input), download the new artifact, then sideload that
-  one instead.
-- **If the app won't launch after a resign**: re-check the trust step
-  above first — a stale/untrusted profile is the most common cause, not a
-  build problem.
+To update an SDK, download its newer release and import it with the same tool. To switch SDKs, choose the version matching the `expo` dependency in your project's `package.json`.

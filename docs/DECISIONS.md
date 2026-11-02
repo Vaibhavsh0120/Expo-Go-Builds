@@ -399,3 +399,16 @@ and release API both listed SDKs 58, 57, 56, 55, 54, 53, 52. Every entry
 contained its IPA, original signed APK, and Android verification receipt.
 No further release deletion or tag changes were necessary. The scheduled
 release watcher also completed successfully after the SDK 52/53 fixes.
+
+## 2026-11-02 — Repository rename and navigation refinements
+
+The repository was renamed by its owner to `Expo-Go-Builds`. Canonical
+links, source catalogs, CLI defaults and documentation now use that name.
+The web catalog accepts both owned repository paths during migration;
+all 14 canonical asset URLs, sizes and digests matched GitHub after the
+rename. Both old and new raw source URLs returned HTTP 200.
+
+The theme control moved to the top-right navbar and defaults to the system
+preference. A styled Radix Select list replaces the native SDK menu while
+retaining keyboard navigation, focus handling, selected state and Escape
+dismissal. Hero artwork has slightly larger responsive framing.

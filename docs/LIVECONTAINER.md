@@ -9,12 +9,12 @@
    SDK your project targets, and tap **Install**.
 
 ```text
-https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json
+https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-Builds/main/apps.json
 ```
 
 Only SDKs with a published IPA are shown. A failed or unfinished build
 does not create an install entry. Refresh the source after a new release.
-The [GitHub Releases page](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases)
+The [GitHub Releases page](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases)
 remains the direct-download option.
 
 LiveContainer's official guide documents this flow and the optional

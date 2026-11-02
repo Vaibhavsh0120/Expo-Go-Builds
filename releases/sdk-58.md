@@ -23,5 +23,5 @@ React Native codegen/Hermes setup. The build details below identify the
 actual Xcode and source commit. A successful build does not establish
 real-device testing.
 
-[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/IPA_SIGNING.md)
-· [Build settings and verification](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/SDK_SUPPORT.md)
+[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/IPA_SIGNING.md)
+· [Build settings and verification](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/SDK_SUPPORT.md)

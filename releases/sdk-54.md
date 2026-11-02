@@ -21,5 +21,5 @@ The builder uses the `sdk-54` branch, Yarn Classic, and the older expotools
 plist generator. The build details below identify the exact artifact.
 A successful build does not establish real-device testing.
 
-[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/IPA_SIGNING.md)
-· [Build settings and verification](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/SDK_SUPPORT.md)
+[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/IPA_SIGNING.md)
+· [Build settings and verification](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/SDK_SUPPORT.md)

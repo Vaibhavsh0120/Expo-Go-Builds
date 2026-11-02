@@ -13,8 +13,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-58.0.5/Expo-Go-58.0.5.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk58-20261101-034916/ExpoGo-SDK58.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk58-20261101-034916",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk58-20261101-034916/ExpoGo-SDK58.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk58-20261101-034916",
       "date": "2026-11-01T04:06:38Z",
       "signatureVerified": true
     },
@@ -30,8 +30,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-57.0.9/Expo-Go-57.0.9.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk57-20260816-094039/ExpoGo-SDK57.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk57-20260816-094039",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk57-20260816-094039/ExpoGo-SDK57.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk57-20260816-094039",
       "date": "2026-11-01T04:06:36Z",
       "signatureVerified": true
     },
@@ -47,8 +47,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-56.0.4/Expo-Go-56.0.4.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk56-20260816-090047/ExpoGo-SDK56.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk56-20260816-090047",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk56-20260816-090047/ExpoGo-SDK56.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk56-20260816-090047",
       "date": "2026-11-01T04:06:16Z",
       "signatureVerified": true
     },
@@ -64,8 +64,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-55.0.7/Expo-Go-55.0.7.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk55-20261101-034221/ExpoGo-SDK55.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk55-20261101-034221",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk55-20261101-034221/ExpoGo-SDK55.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk55-20261101-034221",
       "date": "2026-11-01T03:42:26Z",
       "signatureVerified": true
     },
@@ -81,8 +81,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-54.0.8/Expo-Go-54.0.8.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk54-20261101-043016/ExpoGo-SDK54.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk54-20261101-043016",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk54-20261101-043016/ExpoGo-SDK54.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk54-20261101-043016",
       "date": "2026-11-01T09:39:58Z",
       "signatureVerified": true
     },
@@ -98,8 +98,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-2.33.22/Expo-Go-2.33.22.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk53-20261101-094941/ExpoGo-SDK53.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk53-20261101-094941",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk53-20261101-094941/ExpoGo-SDK53.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk53-20261101-094941",
       "date": "2026-11-01T09:49:48Z",
       "signatureVerified": true
     },
@@ -115,8 +115,8 @@
       ],
       "androidClientUrl": "https://github.com/expo/expo-go-releases/releases/download/Expo-Go-2.32.20/Expo-Go-2.32.20.apk",
       "origin": "Original Expo-signed APK, mirrored byte-for-byte; not built or re-signed by this repository.",
-      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk52-20261101-095021/ExpoGo-SDK52.apk",
-      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk52-20261101-095021",
+      "downloadURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk52-20261101-095021/ExpoGo-SDK52.apk",
+      "releaseURL": "https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk52-20261101-095021",
       "date": "2026-11-01T09:50:33Z",
       "signatureVerified": true
     }

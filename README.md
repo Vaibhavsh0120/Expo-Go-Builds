@@ -6,14 +6,14 @@
 <p align="center">Your SDK. Your phone.<br/>Community-built iOS IPAs and original Expo-signed Android APKs.</p>
 <p align="center">
   <a href="https://expo-go-builds.vercel.app"><strong>Choose your SDK on the website →</strong></a><br/>
-  <a href="https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases">GitHub Releases</a> ·
+  <a href="https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases">GitHub Releases</a> ·
   <a href="#livecontainer-source">LiveContainer source</a> ·
   <a href="#github-actions">Build with Actions</a>
 </p>
 
 ## Download and install
 
-**Start with [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases)** or the [download website](https://expo-go-builds.vercel.app).
+**Start with [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases)** or the [download website](https://expo-go-builds.vercel.app).
 Choose the SDK your Expo project uses, then download its file under **Assets**.
 
 | Your device | Download | Install |
@@ -24,6 +24,10 @@ Choose the SDK your Expo project uses, then download its file under **Assets**.
 Android APKs retain Expo’s original signature and are mirrored without modification.
 iOS IPAs are compiled from Expo’s open source code on a GitHub-hosted Mac.
 The IPA needs signing; tapping it alone does not install it.
+
+For iOS, choose [SideStore](https://sidestore.io/), [AltStore Classic](https://altstore.io/),
+[LiveContainer](https://livecontainer.github.io/docs/installation), or [Sideloadly](https://sideloadly.io/).
+[Compare installation options and follow the signing guide →](docs/IPA_SIGNING.md)
 
 ```mermaid
 flowchart LR
@@ -40,7 +44,7 @@ flowchart LR
 Add this one URL in **LiveContainer → Sources → +**, then select the SDK you need:
 
 ```text
-https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json
+https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-Builds/main/apps.json
 ```
 
 Each published SDK is a separate entry. A newer SDK keeps the older choices available;
@@ -67,7 +71,7 @@ is recorded separately. The website enables downloads only after files are publi
 
 Most people can use **Releases**. To prepare a fresh pair:
 
-1. Open [**Actions → Build Expo Go**](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/workflows/build-expo-go.yml) and click **Run workflow** on `main`.
+1. Open [**Actions → Build Expo Go**](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/workflows/build-expo-go.yml) and click **Run workflow** on `main`.
 2. Choose SDK **52–58**.
 3. Optionally tick **Also publish this build as a GitHub Release**, then run it.
 

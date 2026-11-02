@@ -10,8 +10,8 @@ independently read from the SDK 56 branch.
 ## Build status update
 
 The patched SDK 56 build **succeeded** on August 16, 2026:
-[Actions run 31936279223](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31936279223)
-published [ExpoGo-SDK56-unsigned.ipa](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk56-20260816-090047).
+[Actions run 31936279223](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/31936279223)
+published [ExpoGo-SDK56-unsigned.ipa](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk56-20260816-090047).
 This corrects the earlier pending-build status below. Device installation
 has not been verified here. Current dispatch and automatic settings are in
 [SDK_SUPPORT.md](SDK_SUPPORT.md); the following source analysis is the

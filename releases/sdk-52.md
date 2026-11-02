@@ -25,5 +25,5 @@ Only assets actually present under **Assets** are published downloads.
 Build provenance and APK verification receipts are attached when available;
 their presence does not establish real-device launch testing.
 
-[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/IPA_SIGNING.md)
-· [Build settings and verification](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/SDK_SUPPORT.md)
+[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/IPA_SIGNING.md)
+· [Build settings and verification](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/SDK_SUPPORT.md)

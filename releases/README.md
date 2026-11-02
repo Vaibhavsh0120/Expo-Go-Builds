@@ -1,6 +1,6 @@
 # Expo Go SDK release notes
 
-Download from [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases)
+Download from [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases)
 or the [download website](https://expo-go-builds.vercel.app).
 Choose the SDK matching your project, then select the `.ipa` for iOS or
 `.apk` for Android under **Assets**. IPAs are community builds and require

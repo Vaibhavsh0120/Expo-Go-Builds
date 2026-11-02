@@ -22,5 +22,5 @@ memory regression affecting worklets/Reanimated in SDK 56, resolved in
 SDK 57; consult the official notes before choosing this version.
 A successful build does not establish real-device testing.
 
-[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/IPA_SIGNING.md)
-· [Patch and build evidence](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/SDK_56.md)
+[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/IPA_SIGNING.md)
+· [Patch and build evidence](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/SDK_56.md)

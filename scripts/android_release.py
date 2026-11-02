@@ -203,7 +203,7 @@ def main():
     parser.add_argument("--metadata", type=Path)
     parser.add_argument("--output-dir", type=Path, default=Path("apk-output"))
     parser.add_argument("--publish-existing", action="store_true")
-    parser.add_argument("--repo", default="Vaibhavsh0120/Expo-Go-IOS-IPA-Builder")
+    parser.add_argument("--repo", default="Vaibhavsh0120/Expo-Go-Builds")
     args = parser.parse_args()
     metadata = json.loads(args.metadata.read_text(encoding="utf-8")) if args.metadata else official_metadata(args.sdk, request_json(VERSIONS_URL))
     if metadata["sdk"] != args.sdk:

@@ -33,8 +33,19 @@ test('one source URL opens the separate SDK catalog in LiveContainer', () => {
 });
 
 test('Android download requires verified signature and the matching SDK APK', () => {
-  const build = {sdk: 52, version:'2.32.19', signatureVerified:true, packageName:'host.exp.exponent', minSdkVersion:24, sha256:'a'.repeat(64), downloadURL:'https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/expo-go-sdk52-test/ExpoGo-SDK52.apk'};
+  const build = {sdk: 52, version:'2.32.19', signatureVerified:true, packageName:'host.exp.exponent', minSdkVersion:24, sha256:'a'.repeat(64), downloadURL:'https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/download/expo-go-sdk52-test/ExpoGo-SDK52.apk'};
   assert.equal(readAndroidCatalog({builds:[build]})[0].minOSVersion,'7.0');
   assert.deepEqual(readAndroidCatalog({builds:[{...build,signatureVerified:false}]}),[]);
   assert.deepEqual(readAndroidCatalog({builds:[{...build,sdk:53}]}),[]);
+});
+
+test('repository rename accepts both owned download paths and rejects lookalikes', () => {
+  for (const repo of ['Expo-Go-Builds', 'Expo-Go-IOS-IPA-Builder']) {
+    const app = structuredClone(catalog.apps[0]);
+    app.versions[0].downloadURL = app.versions[0].downloadURL.replace('Expo-Go-Builds', repo);
+    assert.equal(readCatalog({ apps: [app] }).length, 1);
+    const apk = {sdk:52, version:'2.32.19', signatureVerified:true, packageName:'host.exp.exponent', minSdkVersion:24, sha256:'a'.repeat(64), downloadURL:`https://github.com/Vaibhavsh0120/${repo}/releases/download/expo-go-sdk52-test/ExpoGo-SDK52.apk`};
+    assert.equal(readAndroidCatalog({builds:[apk]}).length, 1);
+    assert.deepEqual(readAndroidCatalog({builds:[{...apk,downloadURL:apk.downloadURL.replace(repo,repo+'-other')}]}), []);
+  }
 });

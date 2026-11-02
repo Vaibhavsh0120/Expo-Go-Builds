@@ -18,7 +18,7 @@ import zipfile
 
 
 SUPPORTED_SDKS = {52, 53, 54, 55, 56, 57, 58}
-DEFAULT_REPO = "Vaibhavsh0120/Expo-Go-IOS-IPA-Builder"
+DEFAULT_REPO = "Vaibhavsh0120/Expo-Go-Builds"
 
 
 def select_releases(releases: list[dict], repo: str) -> dict[int, dict]:

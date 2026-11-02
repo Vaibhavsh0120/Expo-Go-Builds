@@ -12,7 +12,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REPO = "Vaibhavsh0120/Expo-Go-IOS-IPA-Builder"
+REPO = "Vaibhavsh0120/Expo-Go-Builds"
 
 
 class LiveContainerSourceTests(unittest.TestCase):

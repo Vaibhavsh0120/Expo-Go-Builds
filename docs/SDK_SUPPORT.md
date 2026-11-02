@@ -58,7 +58,7 @@ replacement Xcode is not guaranteed; failed builds retain diagnostic logs.
   SDK 52 has no root `install:react-native-lab` script, so its React Native
   submodule dependencies are installed directly with Yarn.
 - **SDK 54 now needs Xcode 26 despite its older upstream CI pin.** Run
-  [41267553893](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267553893)
+  [41267553893](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/41267553893)
   reached compilation but failed with `no such module 'DeclaredAgeRange'`
   under Xcode 16.4. The branch's `expo-age-range` imports that iOS 26
   framework unconditionally, while runtime calls are guarded for iOS 26.
@@ -138,13 +138,13 @@ browser checks do not establish physical-device launch testing.
 
 | SDK | Evidence |
 |---|---|
-| 52 | IPA build, verified original Android APK, and paired release succeeded in [41291372969](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41291372969). Physical device installation not verified here. |
-| 53 | IPA build, verified original Android APK, and paired release succeeded in [41291374729](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41291374729). Physical device installation not verified here. |
-| 54 | Native compilation, arm64/plist/ZIP checks, and artifact upload succeeded in [run 41270904815](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41270904815). Its release step failed with HTTP 403; the exact verified artifact was recovered into [this release](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk54-20261101-043016), version 54.0.7, 34,727,630 bytes, SHA-256 `6ac1073f472670faf47e7ee15d1135abbb6158d9abdb819fc97f5f8c7db2b958`. Device installation remains unverified here. |
-| 55 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267544358) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk55-20261101-034221). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
-| 56 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31936279223) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk56-20260816-090047) from August 16. Device installation remains unverified here. |
-| 57 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/31938038257) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk57-20260816-094039). Earlier device testing via SideStore/LiveContainer was reported by the owner; see [SDK_57.md](SDK_57.md). |
-| 58 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/actions/runs/41267578626) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/tag/expo-go-sdk58-20261101-034916). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
+| 52 | IPA build, verified original Android APK, and paired release succeeded in [41291372969](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/41291372969). Physical device installation not verified here. |
+| 53 | IPA build, verified original Android APK, and paired release succeeded in [41291374729](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/41291374729). Physical device installation not verified here. |
+| 54 | Native compilation, arm64/plist/ZIP checks, and artifact upload succeeded in [run 41270904815](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/41270904815). Its release step failed with HTTP 403; the exact verified artifact was recovered into [this release](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk54-20261101-043016), version 54.0.7, 34,727,630 bytes, SHA-256 `6ac1073f472670faf47e7ee15d1135abbb6158d9abdb819fc97f5f8c7db2b958`. Device installation remains unverified here. |
+| 55 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/41267544358) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk55-20261101-034221). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
+| 56 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/31936279223) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk56-20260816-090047) from August 16. Device installation remains unverified here. |
+| 57 | [Successful build](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/31938038257) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk57-20260816-094039). Earlier device testing via SideStore/LiveContainer was reported by the owner; see [SDK_57.md](SDK_57.md). |
+| 58 | [Successful November 1 build](https://github.com/Vaibhavsh0120/Expo-Go-Builds/actions/runs/41267578626) and [published IPA](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases/tag/expo-go-sdk58-20261101-034916). Artifact size and SHA-256 checked during source generation. Device installation remains unverified here. |
 
 The original August build logs were recovered on November 1, 2026:
 SDK 56 built Expo commit `21be29ff1a27822a243b1b7b8bd1bdc963b6dae9`, and

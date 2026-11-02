@@ -21,5 +21,5 @@ SDK 57 is the builder's default selection. The owner reported successful
 device use of an earlier SDK 57 build through SideStore/LiveContainer;
 that report does not verify every later artifact.
 
-[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/IPA_SIGNING.md)
-· [Build and device evidence](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/blob/main/docs/SDK_57.md)
+[Signing instructions](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/IPA_SIGNING.md)
+· [Build and device evidence](https://github.com/Vaibhavsh0120/Expo-Go-Builds/blob/main/docs/SDK_57.md)

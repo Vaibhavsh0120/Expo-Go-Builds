@@ -1,7 +1,10 @@
-export const SOURCE_URL = 'https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/apps.json';
-export const ANDROID_URL = 'https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/main/android.json';
-export const REPOSITORY_URL = 'https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder';
+export const SOURCE_URL = 'https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-Builds/main/apps.json';
+export const ANDROID_URL = 'https://raw.githubusercontent.com/Vaibhavsh0120/Expo-Go-Builds/main/android.json';
+export const REPOSITORY_URL = 'https://github.com/Vaibhavsh0120/Expo-Go-Builds';
 export const SDK_CHOICES = [52, 53, 54, 55, 56, 57, 58];
+
+// Keep existing download URLs valid across the repository rename.
+const RELEASE_PATHS = ['/Vaibhavsh0120/Expo-Go-Builds/releases/download/', '/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/'];
 
 /** Accept only real published release assets from this repository. */
 export function readCatalog(value) {
@@ -16,7 +19,7 @@ export function readCatalog(value) {
     if (!SDK_CHOICES.includes(sdk) || seen.has(sdk) || !/^\d+(\.\d+){1,2}$/.test(minOSVersion || '')) return [];
     try {
       const url = new URL(downloadURL);
-      if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/') || !url.pathname.endsWith('.ipa') || url.username || url.password) return [];
+      if (url.origin !== 'https://github.com' || !RELEASE_PATHS.some(prefix => url.pathname.startsWith(prefix)) || !url.pathname.endsWith('.ipa') || url.username || url.password) return [];
     } catch { return []; }
     seen.add(sdk);
     return [{ sdk, version: String(version?.version || app.version || ''), minOSVersion, downloadURL, size: Number(version?.size || app.size) || 0, sha256: /^[a-f0-9]{64}$/i.test(version?.sha256 || '') ? version.sha256 : '', date: version?.date || app.versionDate || '' }];
@@ -34,7 +37,7 @@ export function readAndroidCatalog(value) {
     if (!build || !SDK_CHOICES.includes(build.sdk) || seen.has(build.sdk) || build.signatureVerified !== true || build.packageName !== 'host.exp.exponent' || !Number.isInteger(build.minSdkVersion) || !/^[a-f0-9]{64}$/i.test(build.sha256 || '')) return [];
     try {
       const url = new URL(build.downloadURL);
-      if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases/download/') || !url.pathname.endsWith(`/ExpoGo-SDK${build.sdk}.apk`) || url.username || url.password) return [];
+      if (url.origin !== 'https://github.com' || !RELEASE_PATHS.some(prefix => url.pathname.startsWith(prefix)) || !url.pathname.endsWith(`/ExpoGo-SDK${build.sdk}.apk`) || url.username || url.password) return [];
     } catch { return []; }
     seen.add(build.sdk);
     const androidVersions = {24: '7.0', 25: '7.1', 26: '8.0', 27: '8.1', 28: '9', 29: '10', 30: '11', 31: '12', 33: '13', 34: '14', 35: '15', 36: '16'};

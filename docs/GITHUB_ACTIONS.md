@@ -1,6 +1,6 @@
 # Build and publish with GitHub Actions
 
-Use [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-IOS-IPA-Builder/releases) for ready downloads.
+Use [GitHub Releases](https://github.com/Vaibhavsh0120/Expo-Go-Builds/releases) for ready downloads.
 There is one workflow: **Build Expo Go (iOS IPA + Android APK)**.
 
 ## Start a run
