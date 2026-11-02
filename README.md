@@ -108,4 +108,5 @@ Free Apple ID signing has Apple-imposed limits; keep your credentials on your ow
 Independent community project, unaffiliated with Expo or Apple.
 [Official Expo Go →](https://expo.dev/go) · [Expo source →](https://github.com/expo/expo)
 
-No license has been selected for this repository’s own code; ask before reusing it.
+This repository’s original code is licensed under the [MIT License](LICENSE).
+Expo Go and third-party components retain their respective licenses and notices.
