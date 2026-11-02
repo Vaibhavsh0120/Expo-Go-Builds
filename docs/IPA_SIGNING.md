@@ -10,6 +10,8 @@ Download the IPA for your project's SDK from [GitHub Releases](https://github.co
 | **AltStore Classic** | Use AltServer on a Mac or Windows PC, then import the IPA into AltStore Classic. | [Get AltStore Classic / AltServer](https://altstore.io/) · [Official guide](https://faq.altstore.io/altstore-classic/your-altstore) |
 | **LiveContainer** | Keep separate SDK entries in one source and run imported apps inside LiveContainer. | [Install LiveContainer](https://livecontainer.github.io/docs/installation) · [Add this project's source](LIVECONTAINER.md) |
 | **Sideloadly** | Sign and install the Expo Go IPA from Windows or macOS. | [Get Sideloadly](https://sideloadly.io/) |
+| **iloader** | Import an IPA from Windows, macOS or Linux; also helps set up SideStore and LiveContainer + SideStore. | [Get iloader](https://iloader.app/) · [Official instructions](https://github.com/nab138/iloader#how-to-use) |
+| **TrollStore** | Permanent IPA installation on specific older iOS versions only. | [Official project and compatibility](https://github.com/opa334/TrollStore) |
 
 Choose **AltStore Classic** for importing this IPA; the AltStore homepage also offers PAL. Follow each tool's current official setup instructions rather than downloading unofficial copies.
 
@@ -43,6 +45,24 @@ All SDKs share Expo Go's bundle identifier. Use LiveContainer's duplicate contro
 2. Connect your iPhone or iPad, then load the downloaded Expo Go IPA.
 3. Supply your Apple Account through Sideloadly and start signing/installing.
 4. Configure its refresh feature or re-sign the same IPA when needed. A refresh does not require rebuilding Expo Go.
+
+## iloader
+
+1. [Download iloader](https://iloader.app/) for Windows, macOS or Linux and complete its prerequisites.
+2. Connect your device, trust the computer when prompted, and sign in through iloader.
+3. Choose the IPA import/install action and select the Expo Go IPA for your project's SDK. Alternatively, use iloader to set up SideStore or LiveContainer + SideStore, then follow the matching section above.
+
+The tool is free. Apple Account signing and refresh limits still apply to conventionally installed apps.
+
+## TrollStore: compatible older iOS only
+
+[TrollStore](https://github.com/opa334/TrollStore) can install IPAs without recurring re-signing on its supported iOS versions: **14.0 beta 2–16.6.1, 16.7 RC (20H18), and 17.0**. Its current method does not support final iOS 16.7.x or iOS 17.0.1 and later.
+
+Check your exact iOS version against the official project, follow the installation guide it links, then open your downloaded Expo Go IPA in TrollStore. Your chosen Expo SDK must also support that iOS version; these builds require at least iOS 15.1 or 16.4 depending on SDK.
+
+## Certificate-based alternatives
+
+[Feather](https://github.com/claration/feather) is a free on-device signing app that requires a developer signing certificate. Certificate availability and costs are separate from the app being free. Check its prerequisites before choosing it.
 
 ## Signing and device settings
 

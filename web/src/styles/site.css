@@ -214,11 +214,12 @@ code { font-family:var(--font-mono,monospace); font-size:.88em; }
 .signing-tools { margin-block:2rem 1rem; scroll-margin-top:2rem; }
 .signing-tools h3 { margin:0 0 0.75rem; font-size:1.25rem; font-weight:650; letter-spacing:-0.03em; }
 .signing-tools>p { margin:0 0 1rem; color:var(--muted-foreground); font-size:0.875rem; line-height:1.7; }
-.signing-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.75rem; }
+.signing-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:1fr; gap:0.75rem; }
 .signing-links>a { display:flex; flex-direction:column; gap:0.5rem; padding:1rem; min-height:5.5rem; border:0.0625rem solid var(--border); border-radius:0.875rem; background:var(--card); }
 .signing-links strong { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; font-size:0.875rem; font-weight:600; }
 .signing-links svg { width:1rem; height:1rem; flex:0 0 1rem; }
-.signing-links span { font-size:0.75rem; line-height:1.6; color:var(--muted-foreground); }
+.signing-links span { flex:1; font-size:0.75rem; line-height:1.6; color:var(--muted-foreground); }
 .signing-links>a:hover { background:var(--muted); }
+.signing-tools>.signing-requirements { margin-top:1rem; font-size:0.75rem; }
 @media (max-width:340px) { .site-header .nav-container span { display:none; } .site-header .nav-container { min-width:2.75rem; justify-content:center; } }
 @media (max-width:600px) { .signing-links { grid-template-columns:1fr; } }

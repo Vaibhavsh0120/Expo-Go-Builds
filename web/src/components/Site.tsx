@@ -166,7 +166,10 @@ export default function Site() {
               <a href="https://altstore.io/"><strong>AltStore Classic <ExternalIcon aria-hidden="true"/></strong><span>Set up AltServer on your Mac or PC, then import the IPA.</span></a>
               <a href="https://livecontainer.github.io/docs/installation"><strong>LiveContainer <ExternalIcon aria-hidden="true"/></strong><span>Set up LiveContainer, then add our SDK source.</span></a>
               <a href="https://sideloadly.io/"><strong>Sideloadly <ExternalIcon aria-hidden="true"/></strong><span>Sign and install the Expo Go IPA from Windows or macOS.</span></a>
+              <a href="https://iloader.app/"><strong>iloader <ExternalIcon aria-hidden="true"/></strong><span>Import IPAs from Windows, macOS, or Linux.</span></a>
+              <a href="https://github.com/opa334/TrollStore"><strong>TrollStore <ExternalIcon aria-hidden="true"/></strong><span>Permanent installs on supported older iOS versions only.</span></a>
             </div>
+            <p className="signing-requirements">Free Apple Account signing needs regular refreshing. Check each tool’s setup and iOS requirements.</p>
           </section>
           <a className="text-link" href="https://github.com/LiveContainer/LiveContainer">LiveContainer setup guide <ArrowIcon aria-hidden="true"/></a>
         </div>

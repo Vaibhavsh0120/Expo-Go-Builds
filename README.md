@@ -26,7 +26,8 @@ iOS IPAs are compiled from Expo’s open source code on a GitHub-hosted Mac.
 The IPA needs signing; tapping it alone does not install it.
 
 For iOS, choose [SideStore](https://sidestore.io/), [AltStore Classic](https://altstore.io/),
-[LiveContainer](https://livecontainer.github.io/docs/installation), or [Sideloadly](https://sideloadly.io/).
+[LiveContainer](https://livecontainer.github.io/docs/installation), [Sideloadly](https://sideloadly.io/), or [iloader](https://iloader.app/).
+TrollStore is another option for [compatible older iOS versions](docs/IPA_SIGNING.md#trollstore-compatible-older-ios-only).
 [Compare installation options and follow the signing guide →](docs/IPA_SIGNING.md)
 
 ```mermaid
